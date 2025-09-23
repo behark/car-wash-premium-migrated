@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.netlify/
+
+# Build outputs
+_next/
+.next/
+out/
+dist/
+build/
+
+# Logs
+*.log
+server.log
+
+# Backup files
+*.backup
+
+# Azure storage
+__azurite_db_blob__.json
+__azurite_db_blob_extent__.json
+__blobstorage__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.production

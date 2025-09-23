@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Autopesu Kiilto & Loisto logo">
+  <rect width="512" height="512" rx="32" fill="#7C3AED"/>
+  <g fill="#fff" transform="translate(64 128)">
+    <path d="M64 160c0-53 86-96 192-96s192 43 192 96-86 96-192 96S64 213 64 160z" opacity=".15"/>
+    <circle cx="64" cy="40" r="8"/>
+    <circle cx="112" cy="24" r="6"/>
+    <circle cx="160" cy="40" r="8"/>
+    <path d="M64 160h288c18 0 32-14 32-32v-24c0-13-8-25-21-30l-51-21c-29-12-60-18-92-18h-24c-29 0-57 6-84 18l-48 22c-12 6-20 18-20 31v22c0 18 14 32 32 32zm40 32a24 24 0 110-48 24 24 0 010 48zm208 0a24 24 0 110-48 24 24 0 010 48z"/>
+    <path d="M300 8l10 16 18 4-14 12 3 18-17-8-17 8 3-18-14-12 18-4 10-16z"/>
+  </g>
+  <text x="256" y="440" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="36" fill="#fff">Kiilto &amp; Loisto</text>
+</svg>

@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id              Int       @id @default(autoincrement())
+  titleFi         String
+  titleEn         String
+  descriptionFi   String
+  descriptionEn   String
+  priceCents      Int
+  durationMinutes Int
+  capacity        Int       @default(1)
+  image           String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookings        Booking[]
+}
+
+model Booking {
+  id                Int       @id @default(autoincrement())
+  service           Service   @relation(fields: [serviceId], references: [id])
+  serviceId         Int
+  vehicleType       String
+  date              DateTime
+  startTime         DateTime
+  endTime           DateTime
+  duration          Int
+  priceCents        Int
+  status            BookingStatus @default(PENDING)
+  customerName      String
+  customerEmail     String
+  customerPhone     String
+  licencePlate      String?
+  notes             String?
+  paymentStatus     PaymentStatus @default(PENDING)
+  paymentIntentId   String?
+  stripeSessionId   String?
+  confirmationCode  String?   @unique
+  adminNotes        String?
+  cancelledAt       DateTime?
+  completedAt       DateTime?
+  notificationsSent Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  timeSlot          TimeSlot? @relation(fields: [timeSlotId], references: [id])
+  timeSlotId        Int?
+
+  @@index([date, startTime])
+  @@index([customerEmail])
+  @@index([confirmationCode])
+}
+
+model Testimonial {
+  id          Int      @id @default(autoincrement())
+  name        String
+  contentFi   String
+  contentEn   String
+  rating      Int
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?
+  email        String   @unique
+  role         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
+
+model TimeSlot {
+  id            Int       @id @default(autoincrement())
+  date          DateTime
+  startTime     String    // HH:MM format
+  endTime       String    // HH:MM format
+  isAvailable   Boolean   @default(true)
+  maxCapacity   Int       @default(1)
+  currentBookings Int     @default(0)
+  isHoliday     Boolean   @default(false)
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  bookings      Booking[]
+
+  @@unique([date, startTime])
+  @@index([date])
+}
+
+model BusinessHours {
+  id          Int     @id @default(autoincrement())
+  dayOfWeek   Int     // 0=Sunday, 1=Monday, etc.
+  startTime   String  // HH:MM format
+  endTime     String  // HH:MM format
+  isOpen      Boolean @default(true)
+  breakStart  String? // HH:MM format for lunch break
+  breakEnd    String? // HH:MM format
+
+  @@unique([dayOfWeek])
+}
+
+model Holiday {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  name        String
+  description String?
+
+  @@unique([date])
+}
+
+model EmailNotification {
+  id              Int      @id @default(autoincrement())
+  bookingId       Int
+  type            EmailType
+  recipientEmail  String
+  subject         String
+  sentAt          DateTime @default(now())
+  status          String   @default("SENT")
+  errorMessage    String?
+
+  @@index([bookingId])
+}
+
+model PushSubscription {
+  id            Int      @id @default(autoincrement())
+  endpoint      String   @unique
+  p256dh        String
+  auth          String
+  userAgent     String?
+  userId        Int?
+  customerEmail String?
+  isActive      Boolean  @default(true)
+  lastUsed      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  notifications PushNotification[]
+
+  @@index([customerEmail])
+  @@index([isActive])
+}
+
+model PushNotification {
+  id             Int              @id @default(autoincrement())
+  subscription   PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscriptionId Int
+  bookingId      Int?
+  type           NotificationType
+  title          String
+  body           String
+  icon           String?
+  badge          String?
+  image          String?
+  data           Json?
+  actions        Json?           // JSON array of notification actions
+  scheduledFor   DateTime?       // For scheduled notifications
+  sentAt         DateTime?
+  status         NotificationStatus @default(PENDING)
+  attempts       Int            @default(0)
+  maxAttempts    Int            @default(3)
+  errorMessage   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([subscriptionId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model NotificationTemplate {
+  id          Int              @id @default(autoincrement())
+  type        NotificationType @unique
+  titleFi     String
+  titleEn     String
+  bodyFi      String
+  bodyEn      String
+  icon        String?
+  badge       String?
+  actions     Json?           // Default actions for this type
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model NotificationPreference {
+  id                     Int     @id @default(autoincrement())
+  customerEmail          String  @unique
+  bookingReminders       Boolean @default(true)
+  paymentConfirmations   Boolean @default(true)
+  promotionalOffers      Boolean @default(false)
+  statusUpdates          Boolean @default(true)
+  marketingEmails        Boolean @default(false)
+  smsNotifications       Boolean @default(false)
+  pushNotifications      Boolean @default(true)
+  reminderHoursBefore    Int     @default(24)    // Hours before booking to send reminder
+  updatedAt              DateTime @updatedAt
+
+  @@index([customerEmail])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum EmailType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  ADMIN_NOTIFICATION
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  PAYMENT_CONFIRMATION
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  PROMOTIONAL_OFFER
+  STATUS_UPDATE
+  ADMIN_NOTIFICATION
+  MAINTENANCE_ALERT
+  CUSTOM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+  EXPIRED
+}

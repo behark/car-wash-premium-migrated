@@ -1,0 +1,17 @@
+
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" fill="#ffffff" rx="18"/>
+  
+      <!-- Car body -->
+      <ellipse cx="90" cy="99.00000000000001" rx="62.99999999999999" ry="27" fill="#1976d2"/>
+      <!-- Car windows -->
+      <ellipse cx="90" cy="81" rx="45" ry="14.4" fill="#ffffff" opacity="0.9"/>
+      <!-- Water drops -->
+      <circle cx="36" cy="54" r="7.2" fill="#4FC3F7"/>
+      <circle cx="144" cy="45" r="5.3999999999999995" fill="#4FC3F7"/>
+      <circle cx="27" cy="125.99999999999999" r="5.3999999999999995" fill="#4FC3F7"/>
+      <circle cx="153" cy="117" r="7.2" fill="#4FC3F7"/>
+      <!-- Shine effect -->
+      <ellipse cx="72" cy="72" rx="14.4" ry="3.6" fill="#ffffff" opacity="0.6"/>
+    
+</svg>
