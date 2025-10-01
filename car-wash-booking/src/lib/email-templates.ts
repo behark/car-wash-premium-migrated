@@ -94,7 +94,7 @@ export function bookingConfirmationTemplate(
             <p><strong>Päivämäärä:</strong> ${formattedDate}</p>
             <p><strong>Aika:</strong> ${booking.startTime} - ${booking.endTime}</p>
             <p><strong>Ajoneuvon tyyppi:</strong> ${booking.vehicleType}</p>
-            ${booking.licencePlate ? `<p><strong>Rekisterinumero:</strong> ${booking.licencePlate}</p>` : ''}
+            ${booking.licensePlate ? `<p><strong>Rekisterinumero:</strong> ${booking.licensePlate}</p>` : ''}
             <p><strong>Hinta:</strong> ${price} €</p>
             ${booking.notes ? `<p><strong>Lisätiedot:</strong> ${booking.notes}</p>` : ''}
           </div>
@@ -142,7 +142,7 @@ Palvelu: ${booking.service.titleFi}
 Päivämäärä: ${formattedDate}
 Aika: ${booking.startTime} - ${booking.endTime}
 Ajoneuvon tyyppi: ${booking.vehicleType}
-${booking.licencePlate ? `Rekisterinumero: ${booking.licencePlate}` : ''}
+${booking.licensePlate ? `Rekisterinumero: ${booking.licensePlate}` : ''}
 Hinta: ${price} €
 ${booking.notes ? `Lisätiedot: ${booking.notes}` : ''}
 

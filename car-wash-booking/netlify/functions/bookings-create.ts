@@ -156,7 +156,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
         customerName: validatedData.customerName,
         customerEmail: validatedData.customerEmail,
         customerPhone: validatedData.customerPhone,
-        licencePlate: validatedData.licensePlate,
+        licensePlate: validatedData.licensePlate,
         notes: validatedData.notes,
         paymentStatus: PaymentStatus.PENDING,
         confirmationCode,

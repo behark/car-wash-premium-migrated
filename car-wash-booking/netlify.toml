@@ -148,36 +148,43 @@
   to = "/404"
   status = 404
 
-# API Routes - Netlify Functions
+# API Routes - Netlify Functions (with forced rewrites)
 [[redirects]]
   from = "/api/services"
   to = "/.netlify/functions/services-index"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/services/:id"
-  to = "/.netlify/functions/services-id/:id"
+  to = "/.netlify/functions/services-id"
   status = 200
+  force = true
+  query = {id = ":id"}
 
 [[redirects]]
   from = "/api/bookings/availability"
   to = "/.netlify/functions/bookings-availability"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/bookings/create"
   to = "/.netlify/functions/bookings-create"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/payment/create-session"
   to = "/.netlify/functions/payment-create-session"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/payment/webhook"
   to = "/.netlify/functions/payment-webhook"
   status = 200
+  force = true
 
 # ==========================================
 # RATE LIMITING & ANTI-SPAM
@@ -187,14 +194,14 @@
 [forms]
   honeypot = "_gotcha"
 
-# Rate limiting for forms
-[[edge_functions]]
-  path = "/api/bookings/*"
-  function = "rate-limiter"
+# Rate limiting for forms (disabled to fix API redirects)
+# [[edge_functions]]
+#   path = "/api/bookings/*"
+#   function = "rate-limiter"
 
-[[edge_functions]]
-  path = "/api/auth/*"
-  function = "auth-rate-limiter"
+# [[edge_functions]]
+#   path = "/api/auth/*"
+#   function = "auth-rate-limiter"
 
 # ==========================================
 # PERFORMANCE OPTIMIZATION

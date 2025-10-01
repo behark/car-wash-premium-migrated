@@ -30,15 +30,15 @@ model Booking {
   serviceId         Int
   vehicleType       String
   date              DateTime
-  startTime         DateTime
-  endTime           DateTime
+  startTime         String    // HH:MM format
+  endTime           String    // HH:MM format
   duration          Int
   priceCents        Int
   status            BookingStatus @default(PENDING)
   customerName      String
   customerEmail     String
   customerPhone     String
-  licencePlate      String?
+  licensePlate      String?
   notes             String?
   paymentStatus     PaymentStatus @default(PENDING)
   paymentIntentId   String?

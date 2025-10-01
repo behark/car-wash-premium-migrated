@@ -70,7 +70,7 @@ export default function Booking() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('/.netlify/functions/services-index?active=true');
+      const response = await fetch('/api/services?active=true');
       const data = await response.json();
       if (data.success) {
         setServices(data.services);
@@ -83,7 +83,7 @@ export default function Booking() {
   const fetchAvailableTimeSlots = async () => {
     try {
       const response = await fetch(
-        `/.netlify/functions/bookings-availability?date=${selectedDate}&serviceId=${selectedService}`
+        `/api/bookings/availability?date=${selectedDate}&serviceId=${selectedService}`
       );
       const data = await response.json();
       if (data.success) {
@@ -100,7 +100,7 @@ export default function Booking() {
 
     try {
       // Create booking
-      const bookingResponse = await fetch('/.netlify/functions/bookings-create', {
+      const bookingResponse = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,29 +124,36 @@ export default function Booking() {
         throw new Error(bookingData.error || 'Varauksen tekeminen epäonnistui');
       }
 
-      // Create payment session
-      const paymentResponse = await fetch('/.netlify/functions/payment-create-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bookingId: bookingData.booking.id,
-        }),
-      });
+      // For now, skip payment and go directly to confirmation
+      // This is for testing purposes - in production you'd handle payment first
+      console.log('Booking created successfully:', bookingData.booking);
 
-      const paymentData = await paymentResponse.json();
+      // Redirect to confirmation page
+      router.push(`/booking/confirmation?booking=${bookingData.booking.confirmationCode}`);
 
-      if (!paymentResponse.ok) {
-        throw new Error(paymentData.error || 'Maksusession luominen epäonnistui');
-      }
+      // TODO: Add payment handling back when Stripe is configured
+      // const paymentResponse = await fetch('/api/payment/create-session', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     bookingId: bookingData.booking.id,
+      //   }),
+      // });
 
-      // Redirect to Stripe checkout
-      if (paymentData.url) {
-        window.location.href = paymentData.url;
-      } else {
-        throw new Error('Maksulinkki puuttuu');
-      }
+      // const paymentData = await paymentResponse.json();
+
+      // if (!paymentResponse.ok) {
+      //   throw new Error(paymentData.error || 'Maksusession luominen epäonnistui');
+      // }
+
+      // // Redirect to Stripe checkout
+      // if (paymentData.url) {
+      //   window.location.href = paymentData.url;
+      // } else {
+      //   throw new Error('Maksulinkki puuttuu');
+      // }
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
@@ -453,7 +460,7 @@ export default function Booking() {
                     onClick={handleBooking}
                   >
                     <span className="relative z-10">
-                      {loading ? 'Käsitellään...' : 'Siirry maksamaan'}
+                      {loading ? 'Käsitellään...' : 'Vahvista varaus'}
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>

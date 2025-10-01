@@ -191,7 +191,7 @@ export async function createBooking(data: BookingData) {
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       customerPhone: data.customerPhone,
-      licencePlate: data.licensePlate,
+      licensePlate: data.licensePlate,
       notes: data.notes,
       paymentStatus: PaymentStatus.PENDING,
       confirmationCode,
