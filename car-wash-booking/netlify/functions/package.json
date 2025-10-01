@@ -1,7 +1,6 @@
 {
   "name": "netlify-functions",
   "version": "1.0.0",
-  "type": "module",
   "devDependencies": {
     "@netlify/functions": "^2.0.0",
     "@types/node": "^18.0.0",
