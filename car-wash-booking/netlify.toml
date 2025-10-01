@@ -3,7 +3,7 @@
 
 [build]
   command = "npm install && prisma generate && npm run build"
-  publish = "out"
+  publish = ".next"
   functions = "netlify/functions"
 
 [build.environment]
