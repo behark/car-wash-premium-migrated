@@ -100,6 +100,7 @@ exports.handler = async (event, context) => {
         date: new Date(date),
         startTime,
         endTime,
+        duration: service.durationMinutes,
         customerName,
         customerEmail,
         customerPhone,

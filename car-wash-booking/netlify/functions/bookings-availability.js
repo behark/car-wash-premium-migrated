@@ -113,6 +113,12 @@ exports.handler = async (event, context) => {
       startTime.setHours(currentHour, currentMinute, 0, 0);
       const endTime = addMinutes(startTime, service.durationMinutes);
 
+      // Check for overlapping bookings
+      // A booking overlaps if:
+      // 1. It starts before our slot ends AND
+      // 2. It ends after our slot starts
+      const slotEndTime = format(endTime, 'HH:mm');
+
       const conflictingBookings = await prisma.booking.findMany({
         where: {
           date: {
@@ -123,9 +129,10 @@ exports.handler = async (event, context) => {
             notIn: ['CANCELLED', 'NO_SHOW'],
           },
           OR: [
+            // Booking starts before our slot ends and ends after our slot starts
             {
               AND: [
-                { startTime: { lte: slotTime } },
+                { startTime: { lt: slotEndTime } },
                 { endTime: { gt: slotTime } },
               ],
             },
@@ -150,10 +157,11 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers,
       body: JSON.stringify({
+        success: true,
         available: true,
         date: date,
         serviceId: serviceId,
-        slots: slots,
+        timeSlots: slots,
       }),
     };
   } catch (error) {

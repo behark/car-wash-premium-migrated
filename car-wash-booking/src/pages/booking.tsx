@@ -73,11 +73,19 @@ export default function Booking() {
         `/.netlify/functions/bookings-availability?date=${selectedDate}&serviceId=${selectedService}`
       );
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.timeSlots) {
         setTimeSlots(data.timeSlots);
+      } else if (data.available === false) {
+        // Day is closed
+        setTimeSlots([]);
+      } else {
+        console.error('Unexpected response format:', data);
+        setTimeSlots([]);
       }
     } catch (error) {
       console.error('Failed to fetch availability:', error);
+      setError('Ei voitu hakea vapaita aikoja. Yritä uudelleen.');
+      setTimeSlots([]);
     }
   }, [selectedDate, selectedService]);
 
