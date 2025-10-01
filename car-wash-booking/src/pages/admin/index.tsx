@@ -1,11 +1,10 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import SEO from '../../components/SEO';
 import { siteConfig } from '../../lib/siteConfig';
 import { format } from 'date-fns';
-import { fi } from 'date-fns/locale';
 
 interface DashboardStats {
   todayBookings: number;
@@ -43,16 +42,7 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
-      router.push('/admin/login');
-    } else {
-      fetchDashboardData();
-    }
-  }, [session, status]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       // This would fetch real data from your API
       // For now, we'll use placeholder data
@@ -70,7 +60,16 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push('/admin/login');
+    } else {
+      fetchDashboardData();
+    }
+  }, [session, status, router, fetchDashboardData]);
 
   const handleLogout = async () => {
     await signOut({ redirect: false });

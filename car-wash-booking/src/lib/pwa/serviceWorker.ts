@@ -267,7 +267,7 @@ export function skipWaiting(): void {
   }
 }
 
-export default {
+const serviceWorkerManager = {
   register,
   unregister,
   isStandalone,
@@ -280,3 +280,5 @@ export default {
   checkForUpdates,
   skipWaiting,
 };
+
+export default serviceWorkerManager;

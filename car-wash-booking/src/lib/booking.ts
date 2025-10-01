@@ -1,7 +1,6 @@
 import { prisma } from './prisma';
 import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { format, addMinutes, parseISO, startOfDay, endOfDay } from 'date-fns';
-import { fi } from 'date-fns/locale';
 
 export interface TimeSlot {
   time: string;

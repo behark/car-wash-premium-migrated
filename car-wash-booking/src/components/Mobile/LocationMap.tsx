@@ -3,15 +3,13 @@
  * Shows directions to car wash and location-based features
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   useGeolocation,
   useDistanceToCarWash,
   openCarWashDirections,
-  CAR_WASH_LOCATION,
   CAR_WASH_ADDRESS,
-  LocationCoordinates,
 } from '../../lib/location';
 
 interface LocationMapProps {
@@ -36,8 +34,6 @@ export default function LocationMap({
   } = useGeolocation();
 
   const {
-    distance,
-    travelTime,
     formattedDistance,
     formattedTravelTime,
     isNearby,

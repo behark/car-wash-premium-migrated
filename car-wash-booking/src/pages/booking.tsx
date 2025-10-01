@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import SEO from '../components/SEO';
@@ -56,19 +55,7 @@ export default function Booking() {
     'Muu'
   ];
 
-  // Fetch services on component mount
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  // Fetch available time slots when date and service are selected
-  useEffect(() => {
-    if (selectedDate && selectedService) {
-      fetchAvailableTimeSlots();
-    }
-  }, [selectedDate, selectedService]);
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       const response = await fetch('/.netlify/functions/services-index?active=true');
       const data = await response.json();
@@ -78,9 +65,9 @@ export default function Booking() {
     } catch (error) {
       console.error('Failed to fetch services:', error);
     }
-  };
+  }, []);
 
-  const fetchAvailableTimeSlots = async () => {
+  const fetchAvailableTimeSlots = useCallback(async () => {
     try {
       const response = await fetch(
         `/.netlify/functions/bookings-availability?date=${selectedDate}&serviceId=${selectedService}`
@@ -92,7 +79,19 @@ export default function Booking() {
     } catch (error) {
       console.error('Failed to fetch availability:', error);
     }
-  };
+  }, [selectedDate, selectedService]);
+
+  // Fetch services on component mount
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  // Fetch available time slots when date and service are selected
+  useEffect(() => {
+    if (selectedDate && selectedService) {
+      fetchAvailableTimeSlots();
+    }
+  }, [selectedDate, selectedService, fetchAvailableTimeSlots]);
 
   const handleBooking = async () => {
     setLoading(true);

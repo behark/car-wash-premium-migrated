@@ -43,20 +43,6 @@ export function usePhotoManager(options: UsePhotoManagerOptions = {}) {
     isCompressing: false,
   });
 
-  // Load photos from localStorage on mount
-  useEffect(() => {
-    if (bookingId) {
-      loadPhotos();
-    }
-  }, [bookingId]);
-
-  // Auto-save photos when they change
-  useEffect(() => {
-    if (autoSave && bookingId && state.photos.length > 0) {
-      savePhotos();
-    }
-  }, [autoSave, bookingId, state.photos]);
-
   const loadPhotos = useCallback(() => {
     try {
       const stored = localStorage.getItem(`booking_photos_${bookingId}`);
@@ -86,6 +72,20 @@ export function usePhotoManager(options: UsePhotoManagerOptions = {}) {
       console.error('Failed to save photos:', error);
     }
   }, [bookingId, state.photos]);
+
+  // Load photos from localStorage on mount
+  useEffect(() => {
+    if (bookingId) {
+      loadPhotos();
+    }
+  }, [bookingId, loadPhotos]);
+
+  // Auto-save photos when they change
+  useEffect(() => {
+    if (autoSave && bookingId && state.photos.length > 0) {
+      savePhotos();
+    }
+  }, [autoSave, bookingId, state.photos, savePhotos]);
 
   const compressImage = useCallback((
     dataUrl: string,

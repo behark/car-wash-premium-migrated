@@ -8,10 +8,8 @@ import { siteConfig } from '../lib/siteConfig';
 import { register as registerSW } from '../lib/pwa/serviceWorker';
 import { initDB } from '../lib/pwa/offlineStorage';
 import OfflineIndicator from '../components/PWA/OfflineIndicator';
-import InstallPrompt, { InstallFAB } from '../components/PWA/InstallPrompt';
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
 
   const canonicalPath = typeof window !== 'undefined' ? window.location.pathname : '/';
@@ -41,13 +39,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
           },
         });
 
-        // Listen for custom install prompt events
-        const handleShowInstallPrompt = () => {
-          setShowInstallPrompt(true);
-        };
-
-        window.addEventListener('show-install-prompt', handleShowInstallPrompt);
-
         // Store beforeinstallprompt event
         const handleBeforeInstallPrompt = (e: Event) => {
           e.preventDefault();
@@ -57,7 +48,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
         return () => {
-          window.removeEventListener('show-install-prompt', handleShowInstallPrompt);
           window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
       } catch (error) {

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -32,15 +32,7 @@ export default function BookingConfirmation() {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (session_id && confirmationCode) {
-      verifyPaymentAndGetBooking();
-    } else if (confirmationCode) {
-      getBookingDetails();
-    }
-  }, [session_id, confirmationCode]);
-
-  const verifyPaymentAndGetBooking = async () => {
+  const verifyPaymentAndGetBooking = useCallback(async () => {
     try {
       const response = await fetch(`/api/payment/verify?sessionId=${session_id}`);
       const data = await response.json();
@@ -56,9 +48,9 @@ export default function BookingConfirmation() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session_id]);
 
-  const getBookingDetails = async () => {
+  const getBookingDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/bookings/${confirmationCode}`);
       const data = await response.json();
@@ -74,7 +66,15 @@ export default function BookingConfirmation() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [confirmationCode]);
+
+  useEffect(() => {
+    if (session_id && confirmationCode) {
+      verifyPaymentAndGetBooking();
+    } else if (confirmationCode) {
+      getBookingDetails();
+    }
+  }, [session_id, confirmationCode, verifyPaymentAndGetBooking, getBookingDetails]);
 
   const formatPrice = (priceCents: number) => {
     return `${(priceCents / 100).toFixed(2)} €`;

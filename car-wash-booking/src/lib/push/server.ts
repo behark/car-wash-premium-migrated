@@ -580,7 +580,7 @@ export async function cleanupNotifications(): Promise<void> {
   console.log('Notification cleanup completed');
 }
 
-export default {
+const pushServer = {
   sendPushNotification,
   sendBulkPushNotifications,
   sendPushNotificationToEmail,
@@ -592,3 +592,5 @@ export default {
   processScheduledNotifications,
   cleanupNotifications,
 };
+
+export default pushServer;

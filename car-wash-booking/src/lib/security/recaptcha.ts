@@ -363,7 +363,7 @@ export const recaptchaConfig = {
   thresholds: SCORE_THRESHOLDS,
 };
 
-export default {
+const recaptchaUtils = {
   verifyRecaptcha,
   requireRecaptcha,
   useRecaptcha,
@@ -373,3 +373,5 @@ export default {
   checkSubmissionRate,
   recaptchaConfig,
 };
+
+export default recaptchaUtils;

@@ -477,7 +477,7 @@ export function usePushSubscription() {
   };
 }
 
-export default {
+const pushNotificationsClient = {
   isPushNotificationSupported,
   getNotificationPermission,
   requestNotificationPermission,
@@ -491,3 +491,5 @@ export default {
   useNotificationPermission,
   usePushSubscription,
 };
+
+export default pushNotificationsClient;

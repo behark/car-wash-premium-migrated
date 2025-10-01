@@ -559,10 +559,12 @@ export async function scheduledBackup(): Promise<void> {
   }
 }
 
-export default {
+const dbBackupManager = {
   createBackup,
   restoreBackup,
   listBackups,
   cleanupOldBackups,
   scheduledBackup,
 };
+
+export default dbBackupManager;

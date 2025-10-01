@@ -56,10 +56,10 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // output: 'export', // Commented out to enable API routes
+  output: 'export', // Enable static export for Netlify
   trailingSlash: true,
   images: {
-    // unoptimized: true, // Only needed for static export
+    unoptimized: true, // Required for static export
   },
   // Temporarily disable custom headers for Netlify deployment debugging
   // async headers() {

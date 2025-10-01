@@ -3,7 +3,7 @@
  * Handles swipe gestures, long press, and haptic feedback for mobile devices
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { TouchEvent } from 'react';
 
 interface GestureOptions {
@@ -124,7 +124,6 @@ export function useGestures(options: GestureOptions = {}) {
 
     const deltaX = touchEnd.current.x - touchStart.current.x;
     const deltaY = touchEnd.current.y - touchStart.current.y;
-    const deltaTime = touchEnd.current.time - touchStart.current.time;
 
     // Handle double tap
     if (onDoubleTap) {

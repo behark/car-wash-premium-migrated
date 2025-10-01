@@ -3,8 +3,8 @@
  * Touch-friendly booking experience with swipe navigation
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import BookingPhotos from '../Camera/BookingPhotos';
@@ -77,17 +77,7 @@ export default function MobileBookingForm() {
     { title: 'Vahvista', icon: '✅' }
   ];
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
-  useEffect(() => {
-    if (selectedDate && selectedService) {
-      fetchAvailableTimeSlots();
-    }
-  }, [selectedDate, selectedService]);
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       const response = await fetch('/api/services?active=true');
       const data = await response.json();
@@ -97,9 +87,9 @@ export default function MobileBookingForm() {
     } catch (error) {
       console.error('Failed to fetch services:', error);
     }
-  };
+  }, []);
 
-  const fetchAvailableTimeSlots = async () => {
+  const fetchAvailableTimeSlots = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/bookings/availability?date=${selectedDate}&serviceId=${selectedService}`
@@ -111,7 +101,17 @@ export default function MobileBookingForm() {
     } catch (error) {
       console.error('Failed to fetch availability:', error);
     }
-  };
+  }, [selectedDate, selectedService]);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  useEffect(() => {
+    if (selectedDate && selectedService) {
+      fetchAvailableTimeSlots();
+    }
+  }, [selectedDate, selectedService, fetchAvailableTimeSlots]);
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {

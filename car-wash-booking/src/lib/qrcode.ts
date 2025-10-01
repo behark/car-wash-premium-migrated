@@ -429,7 +429,7 @@ export function useQRCode() {
   };
 }
 
-export default {
+const qrcodeGenerator = {
   generateBookingQR,
   generateContactQR,
   generateWiFiQR,
@@ -441,3 +441,5 @@ export default {
   downloadQRCode,
   useQRCode,
 };
+
+export default qrcodeGenerator;

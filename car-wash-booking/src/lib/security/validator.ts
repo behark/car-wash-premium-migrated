@@ -377,7 +377,6 @@ export function validateFinnishSSN(ssn: string): { valid: boolean; error?: strin
 
   const day = parseInt(ssn.substring(0, 2), 10);
   const month = parseInt(ssn.substring(2, 4), 10);
-  const year = parseInt(century + ssn.substring(4, 6), 10);
 
   if (day < 1 || day > 31 || month < 1 || month > 12) {
     return { valid: false, error: 'Invalid date in personal identity code' };
@@ -437,7 +436,7 @@ export function validateFileUpload(
 }
 
 // Export all validation functions
-export default {
+const validatorUtils = {
   patterns,
   passwordRules,
   validateEmail,
@@ -455,3 +454,5 @@ export default {
   validateFinnishSSN,
   validateFileUpload,
 };
+
+export default validatorUtils;

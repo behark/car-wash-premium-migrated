@@ -63,23 +63,6 @@ const serviceIcons = {
   )
 };
 
-// Function to get appropriate icon based on service title
-const getServiceIcon = (title: string) => {
-  const lowerTitle = title.toLowerCase();
-
-  // Specific matches first
-  if (lowerTitle.includes('kiillotus')) return serviceIcons.polish;
-  if (lowerTitle.includes('hotel') || lowerTitle.includes('rengashotel')) return serviceIcons.hotel;
-  if (lowerTitle.includes('moottor')) return serviceIcons.engine;
-  if (lowerTitle.includes('hajun') || lowerTitle.includes('otsoni')) return serviceIcons.odor;
-  if (lowerTitle.includes('sisäpuhdistus')) return serviceIcons.interior;
-  if (lowerTitle.includes('kovavaha') || lowerTitle.includes('normaalivaha') || lowerTitle.includes('pikavaha')) return serviceIcons.premium;
-  if (lowerTitle.includes('renkaiden') || lowerTitle.includes('pyök') || lowerTitle.includes('vaihto')) return serviceIcons.tire;
-  if (lowerTitle.includes('pesu') || lowerTitle.includes('käsinpesu') || lowerTitle.includes('wash')) return serviceIcons.wash;
-
-  return serviceIcons.default;
-};
-
 // Professional services with car wash business imagery
 const mockServices = [
   {

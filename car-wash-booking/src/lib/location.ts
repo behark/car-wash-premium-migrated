@@ -440,7 +440,7 @@ export function useGeolocation(
         }
       };
     }
-  }, [options.watch, permission]);
+  }, [options.watch, permission, location, options]);
 
   return {
     location,
@@ -481,7 +481,7 @@ export function useDistanceToCarWash(userLocation: LocationCoordinates | null) {
 
 import { useState, useEffect } from 'react';
 
-export default {
+const locationUtils = {
   isGeolocationSupported,
   getCurrentLocation,
   watchLocation,
@@ -500,3 +500,5 @@ export default {
   CAR_WASH_LOCATION,
   CAR_WASH_ADDRESS,
 };
+
+export default locationUtils;

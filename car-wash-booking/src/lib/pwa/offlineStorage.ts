@@ -421,7 +421,7 @@ export const offlineUtils = {
   },
 };
 
-export default {
+const offlineStorageManager = {
   initDB,
   bookingStorage,
   serviceStorage,
@@ -430,3 +430,5 @@ export default {
   syncQueue,
   offlineUtils,
 };
+
+export default offlineStorageManager;

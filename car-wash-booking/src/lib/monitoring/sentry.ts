@@ -443,7 +443,7 @@ export const metrics = {
 // Export Sentry instance for direct use if needed
 export { Sentry };
 
-export default {
+const sentryMonitoring = {
   initSentry,
   captureException,
   captureMessage,
@@ -461,3 +461,5 @@ export default {
   performHealthCheck,
   metrics,
 };
+
+export default sentryMonitoring;

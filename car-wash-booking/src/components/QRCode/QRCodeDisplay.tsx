@@ -3,7 +3,7 @@
  * Displays QR codes with various styling options and actions
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   generateBookingQR,
@@ -40,11 +40,7 @@ export default function QRCodeDisplay({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    generateQRCode();
-  }, [type, data, size]);
-
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
@@ -79,7 +75,11 @@ export default function QRCodeDisplay({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [type, data, size]);
+
+  useEffect(() => {
+    generateQRCode();
+  }, [generateQRCode]);
 
   const handleDownload = () => {
     if (!qrCodeUrl) return;

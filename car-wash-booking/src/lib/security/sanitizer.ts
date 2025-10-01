@@ -399,7 +399,7 @@ export function isMalicious(input: string): boolean {
 }
 
 // Export all sanitization functions
-export default {
+const sanitizerUtils = {
   escapeHtml,
   stripHtml,
   sanitizeHtml,
@@ -416,3 +416,5 @@ export default {
   sanitizeSearchQuery,
   isMalicious,
 };
+
+export default sanitizerUtils;
