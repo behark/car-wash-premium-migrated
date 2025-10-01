@@ -22,8 +22,8 @@ export const siteConfig = {
     { label: 'La', value: '10:00–16:00' },
     { label: 'Su', value: 'Suljettu' },
   ],
-  email: 'kroiautocenter@gmail.com',
-  emailFrom: 'kroiautocenter@gmail.com',
+  email: 'Info@kiiltoloisto.fi',
+  emailFrom: 'Info@kiiltoloisto.fi',
   social: {
     facebook: 'https://www.facebook.com/profile.php?id=61581129804372',
     instagram: 'https://www.instagram.com/kiiltoloisto/'
