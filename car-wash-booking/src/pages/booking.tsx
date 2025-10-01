@@ -70,7 +70,7 @@ export default function Booking() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('/api/services?active=true');
+      const response = await fetch('/.netlify/functions/services-index?active=true');
       const data = await response.json();
       if (data.success) {
         setServices(data.services);
@@ -83,7 +83,7 @@ export default function Booking() {
   const fetchAvailableTimeSlots = async () => {
     try {
       const response = await fetch(
-        `/api/bookings/availability?date=${selectedDate}&serviceId=${selectedService}`
+        `/.netlify/functions/bookings-availability?date=${selectedDate}&serviceId=${selectedService}`
       );
       const data = await response.json();
       if (data.success) {
@@ -100,7 +100,7 @@ export default function Booking() {
 
     try {
       // Create booking
-      const bookingResponse = await fetch('/api/bookings/create', {
+      const bookingResponse = await fetch('/.netlify/functions/bookings-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function Booking() {
       }
 
       // Create payment session
-      const paymentResponse = await fetch('/api/payment/create-session', {
+      const paymentResponse = await fetch('/.netlify/functions/payment-create-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
