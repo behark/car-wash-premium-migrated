@@ -1,0 +1,16 @@
+{
+  "name": "netlify-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@netlify/functions": "^2.0.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "@sendgrid/mail": "^7.4.0",
+    "date-fns": "^2.29.0",
+    "zod": "^3.21.4"
+  }
+}
