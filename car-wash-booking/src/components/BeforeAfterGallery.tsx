@@ -7,19 +7,19 @@ export default function BeforeAfterGallery() {
       before: 'https://images.unsplash.com/photo-1542362567-b07e54358753?q=80&w=600&auto=format&fit=crop',
       after: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?q=80&w=600&auto=format&fit=crop',
       title: 'Peruspesu',
-      description: 'Likainen auto → Puhdas ja siisti'
+      description: 'Puhdas ja siisti'
     },
     {
       before: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=600&auto=format&fit=crop',
       after: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?q=80&w=600&auto=format&fit=crop',
       title: 'Erikoispesu',
-      description: 'Himmeä pinta → Kiiltävä vahakäsittely'
+      description: 'Kiiltävä vahakäsittely'
     },
     {
       before: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600&auto=format&fit=crop',
       after: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600&auto=format&fit=crop',
       title: 'Sisäpuolen siivous',
-      description: 'Sotkuinen sisätila → Puhdas sisustus'
+      description: 'Puhdas sisustus'
     }
   ];
 
@@ -46,39 +46,15 @@ export default function BeforeAfterGallery() {
               className="group bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
             >
               <div className="relative">
-                {/* Before/After Images */}
-                <div className="grid grid-cols-2 gap-1">
-                  <div className="relative h-52">
-                    <Image
-                      src={transformation.before}
-                      alt={`Ennen - ${transformation.title}`}
-                      fill
-                      sizes="(min-width: 1024px) 16vw, (min-width: 768px) 25vw, 50vw"
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 left-2 bg-navy-900/80 backdrop-blur-sm text-white px-2 py-1 rounded-lg text-xs font-bold">
-                      ENNEN
-                    </div>
-                  </div>
-                  <div className="relative h-52">
-                    <Image
-                      src={transformation.after}
-                      alt={`Jälkeen - ${transformation.title}`}
-                      fill
-                      sizes="(min-width: 1024px) 16vw, (min-width: 768px) 25vw, 50vw"
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 py-1 rounded-lg text-xs font-bold">
-                      JÄLKEEN
-                    </div>
-                  </div>
-                </div>
-
-                {/* Transformation Arrow */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+                {/* Single Image */}
+                <div className="relative h-52">
+                  <Image
+                    src={transformation.after}
+                    alt={transformation.title}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover"
+                  />
                 </div>
               </div>
 

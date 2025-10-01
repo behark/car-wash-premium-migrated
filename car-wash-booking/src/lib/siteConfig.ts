@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: 'Autopesu Kiilto & Loisto',
   shortName: 'Kiilto & Loisto',
-  tagline: 'Ammattimaisesti Kiiltävään Lopputulokseen',
+  tagline: 'Asiantuntevasti Kiiltävään Lopputulokseen',
   subtitle: 'Laadukasta autopesupalvelua kilpailukykyisillä hinnoilla',
   siteUrl: 'https://www.kiiltoloisto.fi',
   heroImage: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=2000&auto=format&fit=crop', // Professional car wash in action
@@ -22,8 +22,8 @@ export const siteConfig = {
     { label: 'La', value: '10:00–16:00' },
     { label: 'Su', value: 'Suljettu' },
   ],
-  email: 'info@premiumautopesu.fi',
-  emailFrom: 'no-reply@premiumautopesu.fi',
+  email: 'kroiautocenter@gmail.com',
+  emailFrom: 'kroiautocenter@gmail.com',
   social: {
     facebook: 'https://www.facebook.com/profile.php?id=61581129804372',
     instagram: 'https://www.instagram.com/kiiltoloisto/'
@@ -34,12 +34,12 @@ export const siteConfig = {
     rating: '4.9',
     customers: '500+',
     years: '15+',
-    guarantee: '100% Premium Tyytyväisyystakuu'
+    guarantee: '100% Tyytyväisyystakuu'
   },
   certifications: [
-    'Sertifioitu Premium Detailing',
+    'Sertifioitu Detailing',
     'Luksusautojen Asiantuntija',
-    'Ympäristöystävällinen Premium',
+    'Ympäristöystävällinen',
     'Vakuutettu ja Bonded'
   ],
   premiumServices: [

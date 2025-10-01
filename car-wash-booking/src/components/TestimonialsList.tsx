@@ -13,7 +13,7 @@ const mockTestimonials = [
   {
     id: 1,
     name: "Markus Hakala",
-    contentFi: "Ceramic coating -palvelu oli täydellinen! BMW:ni näyttää showroom-tasoiselta jo kolme kuukautta myöhemmin. Premium palvelu, premium lopputulos.",
+    contentFi: "Ceramic coating -palvelu oli täydellinen! BMW:ni näyttää showroom-tasoiselta jo kolme kuukautta myöhemmin. Laadukas palvelu, loistava lopputulos.",
     rating: 5,
     photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3",
     carModel: "BMW X5",
@@ -31,7 +31,7 @@ const mockTestimonials = [
   {
     id: 3,
     name: "Antti Virtanen",
-    contentFi: "Täydellinen luxury detailing -kokemus Audi A8:lleni. Jokainen yksityiskohta huomioitu, työ tehty sydämellä. Tämä on sitä todellista premium palvelua.",
+    contentFi: "Täydellinen detailing -kokemus Audi A8:lleni. Jokainen yksityiskohta huomioitu, työ tehty sydämellä. Tämä on sitä todellista laadukasta palvelua.",
     rating: 5,
     photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3",
     carModel: "Audi A8",
@@ -49,7 +49,7 @@ const mockTestimonials = [
   {
     id: 5,
     name: "Mikael Åström",
-    contentFi: "Complete luxury detailing -paketti Tesla Model S:lleni oli investointi, joka kannatti. Ammattitaitoinen työ, premium tulokset. Palaan varmasti!",
+    contentFi: "Täydellinen detailing -paketti Tesla Model S:lleni oli investointi, joka kannatti. Ammattitaitoinen työ, loistavat tulokset. Palaan varmasti!",
     rating: 5,
     photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop&ixlib=rb-4.0.3",
     carModel: "Tesla Model S",
@@ -117,29 +117,14 @@ export default function TestimonialsList({ testimonials }: { testimonials: Testi
             "{testimonial.contentFi}"
           </blockquote>
 
-          {/* Author with Photo */}
-          <div className="flex items-center">
-            {testimonial.photo ? (
-              <img
-                src={testimonial.photo}
-                alt={testimonial.name}
-                className="w-12 h-12 rounded-full object-cover mr-4 ring-2 ring-gold-400"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-gold-500 to-gold-600 rounded-full flex items-center justify-center mr-4">
-                <span className="text-navy-900 font-bold text-lg">
-                  {testimonial.name.charAt(0)}
-                </span>
-              </div>
-            )}
-            <div>
-              <cite className="font-bold text-navy-900 not-italic">{testimonial.name}</cite>
-              <div className="text-sm text-slate-600">
-                {testimonial.carModel && testimonial.location ?
-                  `${testimonial.carModel} • ${testimonial.location}` :
-                  'Premium asiakas'
-                }
-              </div>
+          {/* Author without Photo */}
+          <div>
+            <cite className="font-bold text-navy-900 not-italic">{testimonial.name}</cite>
+            <div className="text-sm text-slate-600">
+              {testimonial.carModel && testimonial.location ?
+                `${testimonial.carModel} • ${testimonial.location}` :
+                'Asiakas'
+              }
             </div>
           </div>
 

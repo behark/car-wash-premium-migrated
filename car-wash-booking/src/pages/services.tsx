@@ -4,12 +4,13 @@ import Header from '../components/Header';
 import SEO from '../components/SEO';
 import ServicesGrid from '../components/ServicesGrid';
 import { siteConfig } from '../lib/siteConfig';
+import { mockServices } from '../lib/mockData';
 
 type Props = {
   services: any[];
 };
 
-export default function Services({ services = [] }: Props) {
+export default function Services({ services = mockServices }: Props) {
   return (
     <>
       <SEO

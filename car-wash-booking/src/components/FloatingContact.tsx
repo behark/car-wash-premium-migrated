@@ -12,7 +12,7 @@ export default function FloatingContact() {
         <div className="bg-white rounded-2xl shadow-2xl p-4 mb-4 border border-gold-200 min-w-[280px]">
           <div className="text-center mb-4">
             <h3 className="font-bold text-navy-900 text-lg">Ota yhteyttä</h3>
-            <p className="text-slate-600 text-sm">Premium autopesupalvelu</p>
+            <p className="text-slate-600 text-sm">Kiilto & Loisto</p>
           </div>
 
           <div className="space-y-3">

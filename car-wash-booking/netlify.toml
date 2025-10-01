@@ -148,10 +148,35 @@
   to = "/404"
   status = 404
 
-# API Routes (if using Netlify Functions)
+# API Routes - Netlify Functions
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/services"
+  to = "/.netlify/functions/services-index"
+  status = 200
+
+[[redirects]]
+  from = "/api/services/:id"
+  to = "/.netlify/functions/services-id/:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/bookings/availability"
+  to = "/.netlify/functions/bookings-availability"
+  status = 200
+
+[[redirects]]
+  from = "/api/bookings/create"
+  to = "/.netlify/functions/bookings-create"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/create-session"
+  to = "/.netlify/functions/payment-create-session"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/webhook"
+  to = "/.netlify/functions/payment-webhook"
   status = 200
 
 # ==========================================

@@ -26,7 +26,7 @@ export default function Header() {
               <span className="text-xl font-display font-bold text-white group-hover:text-gold-400 transition-colors">
                 {siteConfig.shortName}
               </span>
-              <span className="text-xs text-silver-300 hidden sm:block">Premium autopesu</span>
+              <span className="text-xs text-silver-300 hidden sm:block">Kiilto & Loisto</span>
             </div>
           </Link>
 

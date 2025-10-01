@@ -90,11 +90,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       {/* PWA Components */}
       <OfflineIndicator />
 
-      {showInstallPrompt && (
-        <InstallPrompt onClose={() => setShowInstallPrompt(false)} />
-      )}
-
-      <InstallFAB />
 
       {/* SW Update Banner */}
       {swUpdateAvailable && (

@@ -170,7 +170,7 @@ export default function Booking() {
     <>
       <SEO
         title={`Varaa aika - ${siteConfig.name}`}
-        description="Varaa aika premium autopesuun. Helppo online-varaus, ammattitaitoinen palvelu."
+        description="Varaa aika autopesuun. Helppo online-varaus, ammattitaitoinen palvelu."
       />
       <Header />
 
@@ -182,12 +182,12 @@ export default function Booking() {
           <div className="relative container mx-auto px-4 text-center">
             <div className="inline-flex items-center bg-purple-500/20 backdrop-blur-sm border border-purple-400/30 rounded-full px-6 py-2 mb-8">
               <span className="text-purple-300 text-sm font-medium">
-                🚗 Premium Online-varaus
+                🚗 Online-varaus
               </span>
             </div>
 
             <h1 className="font-display text-4xl md:text-6xl font-bold text-white mb-6">
-              Varaa Premium
+              Varaa
               <span className="block bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
                 Autopesuaika
               </span>

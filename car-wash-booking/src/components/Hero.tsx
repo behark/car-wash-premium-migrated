@@ -8,7 +8,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <Image
           src={process.env.NEXT_PUBLIC_HERO_IMAGE || siteConfig.heroImage}
-          alt="Premium autopesu palvelut"
+          alt="Kiilto & Loisto autopesu palvelut"
           fill
           priority
           sizes="100vw"
@@ -45,7 +45,7 @@ export default function Hero() {
 
         {/* Main Headline */}
         <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up">
-          <span className="block text-white">Ammattimaisesti</span>
+          <span className="block text-white">Huolellisesti</span>
           <span className="block bg-gradient-to-r from-purple-400 to-purple-200 bg-clip-text text-transparent">
             Kiiltävään Lopputulokseen
           </span>
@@ -57,7 +57,7 @@ export default function Hero() {
         </p>
 
         <p className="text-lg md:text-xl text-silver-300 mb-12 max-w-3xl mx-auto animate-slide-up animation-delay-300">
-          {siteConfig.subtitle} - ammattitaitoista palvelua, luotettavaa laatua ja kilpailukykyiset hinnat.
+          {siteConfig.subtitle} - luotettavaa laatua ja kilpailukykyiset hinnat.
         </p>
 
         {/* CTA Buttons */}

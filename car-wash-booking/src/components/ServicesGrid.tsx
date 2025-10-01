@@ -35,15 +35,48 @@ const serviceIcons = {
       <circle cx="12" cy="12" r="1.5" fill="currentColor" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.364 5.636l-1.414 1.414M7.05 16.95l-1.414 1.414M18.364 18.364l-1.414-1.414M7.05 7.05L5.636 5.636" />
     </svg>
+  ),
+  polish: (
+    <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  ),
+  hotel: (
+    <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+    </svg>
+  ),
+  engine: (
+    <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+    </svg>
+  ),
+  odor: (
+    <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  interior: (
+    <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
   )
 };
 
 // Function to get appropriate icon based on service title
 const getServiceIcon = (title: string) => {
   const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('erikoispesu') || lowerTitle.includes('premium')) return serviceIcons.premium;
-  if (lowerTitle.includes('peruspesu') || lowerTitle.includes('pesu') || lowerTitle.includes('wash')) return serviceIcons.wash;
-  if (lowerTitle.includes('renkaiden vaihto & säilytys') || lowerTitle.includes('renkaiden') || lowerTitle.includes('vaihto') || lowerTitle.includes('säilytys')) return serviceIcons.tire;
+
+  // Specific matches first
+  if (lowerTitle.includes('kiillotus')) return serviceIcons.polish;
+  if (lowerTitle.includes('hotel') || lowerTitle.includes('rengashotel')) return serviceIcons.hotel;
+  if (lowerTitle.includes('moottor')) return serviceIcons.engine;
+  if (lowerTitle.includes('hajun') || lowerTitle.includes('otsoni')) return serviceIcons.odor;
+  if (lowerTitle.includes('sisäpuhdistus')) return serviceIcons.interior;
+  if (lowerTitle.includes('kovavaha') || lowerTitle.includes('normaalivaha') || lowerTitle.includes('pikavaha')) return serviceIcons.premium;
+  if (lowerTitle.includes('renkaiden') || lowerTitle.includes('pyök') || lowerTitle.includes('vaihto')) return serviceIcons.tire;
+  if (lowerTitle.includes('pesu') || lowerTitle.includes('käsinpesu') || lowerTitle.includes('wash')) return serviceIcons.wash;
+
   return serviceIcons.default;
 };
 
@@ -60,7 +93,7 @@ const mockServices = [
   {
     id: 2,
     titleFi: "Erikoispesu",
-    descriptionFi: "Premium-pesu vahauksen kanssa. Antaa autolle kestävän suojan ja upean kiillon, joka kestää pitkään.",
+    descriptionFi: "Erikoispesu vahauksen kanssa. Antaa autolle kestävän suojan ja upean kiillon, joka kestää pitkään.",
     priceCents: 2500,
     durationMinutes: 75,
     image: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?q=80&w=600&auto=format&fit=crop"
@@ -105,13 +138,6 @@ export default function ServicesGrid({ services }: { services: Service[] }) {
               priority={index < 4}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent group-hover:from-purple-900/30 group-hover:via-purple-600/10 group-hover:to-transparent transition-all duration-500"></div>
-
-            {/* Service Icon Overlay */}
-            <div className="absolute bottom-4 left-4">
-              <div className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
-                {getServiceIcon(service.titleFi)}
-              </div>
-            </div>
           </div>
 
           {/* Service Content */}
@@ -123,18 +149,6 @@ export default function ServicesGrid({ services }: { services: Service[] }) {
             <p className="text-slate-600 text-sm mb-4 line-clamp-2 leading-relaxed">
               {service.descriptionFi}
             </p>
-
-            {/* Service Details */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-4 text-sm text-slate-500">
-                <div className="flex items-center space-x-1">
-                  <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>{service.durationMinutes} min</span>
-                </div>
-              </div>
-            </div>
 
             {/* Price and CTA */}
             <div className="flex items-center justify-between">
