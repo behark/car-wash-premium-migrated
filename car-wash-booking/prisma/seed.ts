@@ -22,50 +22,141 @@ async function main() {
 
   console.log('Admin user created:', adminEmail);
 
-  // Create services with user-specified pricing
+  // Create services based on official price list
   const services = [
+    // AUTOPESUT (Car Washes)
     {
-      titleFi: 'Peruspesu',
-      titleEn: 'Basic Wash',
-      descriptionFi: 'Ulkopuolen perusteellinen pesu ja kuivaus',
-      descriptionEn: 'Thorough exterior wash and dry',
-      priceCents: 1500, // 15€
-      durationMinutes: 45,
+      titleFi: 'Käsinpesu',
+      titleEn: 'Hand Wash',
+      descriptionFi: 'Huolellinen käsinpesu, joka palauttaa autosi pinnan raikkauden.',
+      descriptionEn: 'Careful hand wash that restores your car\'s surface freshness.',
+      priceCents: 2500, // 25€
+      durationMinutes: 30,
       capacity: 2,
-      image: 'https://images.unsplash.com/photo-1542362567-b07e54358753?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/service-kasinpesu.svg',
       isActive: true,
     },
     {
-      titleFi: 'Erikoispesu',
-      titleEn: 'Special Wash',
-      descriptionFi: 'Premium pesu sisältäen vahan ja renkaiden käsittelyn',
-      descriptionEn: 'Premium wash including wax and tire treatment',
-      priceCents: 2500, // 25€
+      titleFi: 'Käsinpesu + Pikavaha',
+      titleEn: 'Hand Wash + Quick Wax',
+      descriptionFi: 'Kevyt vaha antaa upean kiillon ja suojaa autoasi heti pesun jälkeen.',
+      descriptionEn: 'Light wax gives great shine and protects your car right after washing.',
+      priceCents: 3000, // 30€
+      durationMinutes: 40,
+      capacity: 2,
+      image: '/images/service-pikavaha.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Käsinpesu + Sisäpuhdistus',
+      titleEn: 'Hand Wash + Interior Cleaning',
+      descriptionFi: 'Kokonaisvaltainen puhdistus: matot, imurointi, ikkunat ja pölyjen poisto.',
+      descriptionEn: 'Comprehensive cleaning: carpets, vacuuming, windows and dust removal.',
+      priceCents: 5500, // 55€
       durationMinutes: 60,
       capacity: 2,
-      image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/service-sisapuhdistus.svg',
       isActive: true,
     },
     {
-      titleFi: 'Vahapesu',
-      titleEn: 'Wax Wash',
-      descriptionFi: 'Täydellinen pesu premium-vahakäsittelyllä ja suojauksella',
-      descriptionEn: 'Complete wash with premium wax treatment and protection',
-      priceCents: 3500, // 35€
+      titleFi: 'Käsinpesu + Normaalivaha',
+      titleEn: 'Hand Wash + Normal Wax',
+      descriptionFi: 'Vahapinnoite, joka säilyttää kiillon ja suojan jopa 2–3 kuukauden ajan.',
+      descriptionEn: 'Wax coating that maintains shine and protection for 2-3 months.',
+      priceCents: 7000, // 70€
+      durationMinutes: 90,
+      capacity: 2,
+      image: '/images/service-normaalivaha.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Käsinpesu + Kovavaha',
+      titleEn: 'Hand Wash + Hard Wax',
+      descriptionFi: 'Pitkäkestoinen 6 kk suoja ja upea kiilto kovavahauksella.',
+      descriptionEn: 'Long-lasting 6-month protection and great shine with hard wax.',
+      priceCents: 11000, // 110€
+      durationMinutes: 120,
+      capacity: 1,
+      image: '/images/service-kovavaha.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Maalipinnan Kiillotus',
+      titleEn: 'Paint Surface Polishing',
+      descriptionFi: '3 step kiillotus sekä käsinvahaus. Henkilöauto 350€, Maasturi 400€, Pakettiauto 450€.',
+      descriptionEn: '3-step polishing with hand waxing. Car 350€, SUV 400€, Van 450€.',
+      priceCents: 35000, // 350€
+      durationMinutes: 240,
+      capacity: 1,
+      image: '/images/service-kiillotus.svg',
+      isActive: true,
+    },
+    // RENKAAT (Tires)
+    {
+      titleFi: 'Renkaiden Vaihto',
+      titleEn: 'Tire Change',
+      descriptionFi: 'Turvallisuutta ja varmuutta ajoon – renkaiden allevaihto ja paineiden tarkistus.',
+      descriptionEn: 'Safety and reliability for driving - tire change and pressure check.',
+      priceCents: 2000, // 20€
+      durationMinutes: 30,
+      capacity: 2,
+      image: '/images/service-renkaiden-vaihto.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Renkaiden Pesu',
+      titleEn: 'Tire Wash',
+      descriptionFi: 'Puhtaat renkaat ja vanteet sekä sisältä että ulkoa.',
+      descriptionEn: 'Clean tires and rims both inside and outside.',
+      priceCents: 1000, // 10€
+      durationMinutes: 20,
+      capacity: 2,
+      image: '/images/service-renkaiden-pesu.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Rengashotelli',
+      titleEn: 'Tire Hotel',
+      descriptionFi: 'Helppoutta ja tilansäästöä – kausisäilytys keväästä syksyyn tai syksystä kevääseen.',
+      descriptionEn: 'Convenience and space saving - seasonal storage from spring to autumn or autumn to spring.',
+      priceCents: 6900, // 69€
+      durationMinutes: 15,
+      capacity: 4,
+      image: '/images/service-rengashotelli.svg',
+      isActive: true,
+    },
+    // LISÄPALVELUT (Additional Services)
+    {
+      titleFi: 'Moottorin Pesu',
+      titleEn: 'Engine Wash',
+      descriptionFi: 'Puhdas moottoritila – aina asiakkaan omalla vastuulla.',
+      descriptionEn: 'Clean engine bay - always at customer\'s own responsibility.',
+      priceCents: 2000, // 20€
+      durationMinutes: 30,
+      capacity: 2,
+      image: '/images/service-moottorin-pesu.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Hajunpoisto Otsonoinnilla',
+      titleEn: 'Odor Removal with Ozone',
+      descriptionFi: 'Raikas sisäilma – tehokas otsonointi poistaa epämiellyttävät hajut.',
+      descriptionEn: 'Fresh interior air - effective ozone treatment removes unpleasant odors.',
+      priceCents: 5000, // 50€
+      durationMinutes: 60,
+      capacity: 1,
+      image: '/images/service-hajunpoisto.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Penkkien Pesu',
+      titleEn: 'Seat Wash',
+      descriptionFi: 'Syväpuhdistetut penkit – kemiallinen märkäpesu palauttaa raikkauden.',
+      descriptionEn: 'Deep cleaned seats - chemical wet wash restores freshness.',
+      priceCents: 10000, // 100€
       durationMinutes: 90,
       capacity: 1,
-      image: 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?q=80&w=1200&auto=format&fit=crop',
-      isActive: true,
-    },
-    {
-      titleFi: 'Renkaan vaihto',
-      titleEn: 'Tire Change',
-      descriptionFi: 'Ammattitaitoinen renkaiden vaihto ja tasapainotus',
-      descriptionEn: 'Professional tire change and balancing',
-      priceCents: 4000, // 40€
-      durationMinutes: 60,
-      capacity: 2,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/service-penkkien-pesu.svg',
       isActive: true,
     },
   ];
