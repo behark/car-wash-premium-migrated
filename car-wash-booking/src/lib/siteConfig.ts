@@ -18,7 +18,7 @@ export const siteConfig = {
     mapsQuery: 'Läkkiseränttie 15, Helsinki, Finland',
   },
   hours: [
-    { label: 'Ma–Pe', value: '08:00–17:00' },
+    { label: 'Ma–Pe', value: '08:00–18:00' },
     { label: 'La', value: '10:00–16:00' },
     { label: 'Su', value: 'Suljettu' },
   ],

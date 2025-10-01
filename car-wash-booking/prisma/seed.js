@@ -85,11 +85,11 @@ async function main() {
   // Create business hours
   const businessHours = [
     { dayOfWeek: 0, startTime: '00:00', endTime: '00:00', isOpen: false }, // Sunday
-    { dayOfWeek: 1, startTime: '08:00', endTime: '17:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Monday
-    { dayOfWeek: 2, startTime: '08:00', endTime: '17:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Tuesday
-    { dayOfWeek: 3, startTime: '08:00', endTime: '17:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Wednesday
-    { dayOfWeek: 4, startTime: '08:00', endTime: '17:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Thursday
-    { dayOfWeek: 5, startTime: '08:00', endTime: '17:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Friday
+    { dayOfWeek: 1, startTime: '08:00', endTime: '18:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Monday
+    { dayOfWeek: 2, startTime: '08:00', endTime: '18:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Tuesday
+    { dayOfWeek: 3, startTime: '08:00', endTime: '18:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Wednesday
+    { dayOfWeek: 4, startTime: '08:00', endTime: '18:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Thursday
+    { dayOfWeek: 5, startTime: '08:00', endTime: '18:00', isOpen: true, breakStart: '12:00', breakEnd: '13:00' }, // Friday
     { dayOfWeek: 6, startTime: '10:00', endTime: '16:00', isOpen: true }, // Saturday
   ];
 
