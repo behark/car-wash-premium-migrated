@@ -1,6 +1,6 @@
 # Netlify Production Configuration
 # Car Wash Booking System - kiiltoloisto.fi
-# Force deployment trigger
+# Force deployment trigger - bcrypt fix
 
 [build]
   command = "npm run build"
