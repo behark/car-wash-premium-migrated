@@ -46,7 +46,10 @@
     "twilio": "^4.19.0",
     "web-push": "^3.6.0",
     "workbox-webpack-plugin": "^7.0.0",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "typescript": "^5.0.0",
+    "@types/react": "18.3.25",
+    "@types/node": "^18.0.0"
   },
   "devDependencies": {
     "@netlify/functions": "^4.2.6",
@@ -54,11 +57,9 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@types/bcrypt": "^5.0.0",
-    "@types/node": "^18.0.0",
     "@types/node-fetch": "^2.6.13",
     "@types/pg": "^8.15.5",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "18.3.25",
     "@types/web-push": "^3.6.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
@@ -76,7 +77,6 @@
     "supertest": "^6.3.0",
     "tailwindcss": "^3.0.0",
     "ts-node": "^10.0.0",
-    "typescript": "^5.0.0",
     "web-vitals": "^5.1.0"
   }
 }
