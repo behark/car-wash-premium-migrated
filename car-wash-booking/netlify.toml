@@ -1,5 +1,6 @@
 # Netlify Production Configuration
 # Car Wash Booking System - kiiltoloisto.fi
+# Force deployment trigger
 
 [build]
   command = "npm run build"
