@@ -1,5 +1,5 @@
-# Netlify Production Configuration
-# Car Wash Booking System - Fixed Configuration
+# Netlify Production Configuration - Fixed
+# Car Wash Booking System
 
 [build]
   command = "npm install && npm run build"
@@ -14,7 +14,7 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Fixed environment URL configuration - using proper domain
+# Fixed environment URL configuration
 [context.production.environment]
   NEXTAUTH_URL = "https://kiiltoloisto.fi"
   NEXT_PUBLIC_SITE_URL = "https://kiiltoloisto.fi"
@@ -28,250 +28,69 @@
   NEXT_PUBLIC_SITE_URL = "${DEPLOY_URL}"
 
 # ==========================================
-# SECURITY HEADERS
+# SECURITY HEADERS (Simplified)
 # ==========================================
 
 [[headers]]
   for = "/*"
   [headers.values]
-    # Security Headers
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
 
-    # HSTS - Enforce HTTPS (2 years, include subdomains, preload)
-    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
-
-    # CSP - Content Security Policy (simplified for deployment fix)
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
-
-# API Headers - No caching for dynamic content
+# API Headers
 [[headers]]
   for = "/api/*"
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate, private"
-    Pragma = "no-cache"
-    Expires = "0"
-    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Static Assets - Long cache
+# Static Assets
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-[[headers]]
-  for = "/images/*"
-  [headers.values]
-    Cache-Control = "public, max-age=86400, s-maxage=86400"
-
-[[headers]]
-  for = "*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# Fonts caching
-[[headers]]
-  for = "/fonts/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    Access-Control-Allow-Origin = "*"
-
 # ==========================================
-# REDIRECTS & REWRITES
+# API REDIRECTS (Essential)
 # ==========================================
 
-# Force HTTPS (disabled until domain DNS propagates)
-# [[redirects]]
-#   from = "http://*"
-#   to = "https://:splat"
-#   status = 301
-#   force = true
-
-# Remove trailing slashes
-[[redirects]]
-  from = "/*/"
-  to = "/:splat"
-  status = 301
-
-# Redirect www to non-www
-[[redirects]]
-  from = "https://www.kiiltoloisto.fi/*"
-  to = "https://kiiltoloisto.fi/:splat"
-  status = 301
-  force = true
-
-# Security redirects - Block common attack vectors
-[[redirects]]
-  from = "/.env"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/.git/*"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/wp-admin"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/wp-login.php"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/.htaccess"
-  to = "/404"
-  status = 404
-
-[[redirects]]
-  from = "/xmlrpc.php"
-  to = "/404"
-  status = 404
-
-# API Routes - Netlify Functions (with forced rewrites)
+# API Routes to Netlify Functions
 [[redirects]]
   from = "/api/services"
   to = "/.netlify/functions/services-index"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/api/services/:id"
   to = "/.netlify/functions/services-id"
   status = 200
-  force = true
-  query = {id = ":id"}
 
 [[redirects]]
   from = "/api/bookings/availability"
   to = "/.netlify/functions/bookings-availability"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/api/bookings/create"
   to = "/.netlify/functions/bookings-create"
   status = 200
-  force = true
+
+[[redirects]]
+  from = "/api/bookings/:id"
+  to = "/.netlify/functions/bookings-id"
+  status = 200
 
 [[redirects]]
   from = "/api/payment/create-session"
   to = "/.netlify/functions/payment-create-session"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/api/payment/webhook"
   to = "/.netlify/functions/payment-webhook"
   status = 200
-  force = true
-
-# ==========================================
-# RATE LIMITING & ANTI-SPAM
-# ==========================================
-
-# Forms configuration with spam protection
-[forms]
-  honeypot = "_gotcha"
-
-# Rate limiting for forms (disabled to fix API redirects)
-# [[edge_functions]]
-#   path = "/api/bookings/*"
-#   function = "rate-limiter"
-
-# [[edge_functions]]
-#   path = "/api/auth/*"
-#   function = "auth-rate-limiter"
-
-# ==========================================
-# PERFORMANCE OPTIMIZATION
-# ==========================================
-
-# Enable asset optimization
-[build.processing]
-  skip = false
-
-[build.processing.css]
-  bundle = true
-  minify = true
-
-[build.processing.js]
-  bundle = true
-  minify = true
-
-[build.processing.html]
-  pretty_urls = true
-
-[build.processing.images]
-  compress = true
-
-# ==========================================
-# ERROR PAGES
-# ==========================================
-
-[[redirects]]
-  from = "/500"
-  to = "/500.html"
-  status = 500
-
-[[redirects]]
-  from = "/404"
-  to = "/404.html"
-  status = 404
-
-# ==========================================
-# PLUGINS
-# ==========================================
-
-# Plugins commented out to enable deployment
-# Can be re-enabled after installing the required packages:
-# npm install --save-dev @netlify/plugin-sitemap @netlify/plugin-lighthouse netlify-plugin-checklinks
-
-# # Sitemap generation
-# [[plugins]]
-#   package = "@netlify/plugin-sitemap"
-#
-#   [plugins.inputs]
-#   buildDir = "out"
-#   exclude = [
-#     "/admin/*",
-#     "/api/*",
-#     "/.netlify/*",
-#     "/404",
-#     "/500"
-#   ]
-#
-# # Lighthouse CI for performance monitoring
-# [[plugins]]
-#   package = "@netlify/plugin-lighthouse"
-#
-#   [plugins.inputs.thresholds]
-#     performance = 0.9
-#     accessibility = 0.9
-#     best-practices = 0.9
-#     seo = 0.9
-#
-# # Security headers check
-# [[plugins]]
-#   package = "netlify-plugin-checklinks"
-#
-#   [plugins.inputs]
-#   skipPatterns = [
-#     "/api/*",
-#     "mailto:*",
-#     "tel:*"
-#   ]
 
 # ==========================================
 # FUNCTIONS CONFIGURATION
@@ -280,35 +99,3 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-
-  # Function-specific timeout settings
-  [functions."send-email"]
-    timeout = 10
-
-  [functions."process-payment"]
-    timeout = 15
-
-  [functions."backup-database"]
-    schedule = "0 2 * * *" # Daily at 2 AM
-
-# ==========================================
-# ENVIRONMENT VARIABLES REQUIREMENTS
-# ==========================================
-
-# Required environment variables (documentation)
-# DATABASE_URL
-# NEXTAUTH_SECRET
-# NEXTAUTH_URL
-# SENDGRID_API_KEY
-# SENDER_EMAIL
-# STRIPE_SECRET_KEY
-# STRIPE_PUBLISHABLE_KEY
-# STRIPE_WEBHOOK_SECRET
-# TWILIO_ACCOUNT_SID
-# TWILIO_AUTH_TOKEN
-# TWILIO_FROM
-# SENTRY_DSN
-# RECAPTCHA_SITE_KEY
-# RECAPTCHA_SECRET_KEY
-# BACKUP_ENCRYPTION_KEY
-# MONITORING_WEBHOOK_URL
