@@ -96,12 +96,12 @@
 # REDIRECTS & REWRITES
 # ==========================================
 
-# Force HTTPS
-[[redirects]]
-  from = "http://*"
-  to = "https://:splat"
-  status = 301
-  force = true
+# Force HTTPS (disabled until domain DNS propagates)
+# [[redirects]]
+#   from = "http://*"
+#   to = "https://:splat"
+#   status = 301
+#   force = true
 
 # Remove trailing slashes
 [[redirects]]
@@ -109,12 +109,12 @@
   to = "/:splat"
   status = 301
 
-# Redirect www to non-www (or vice versa based on preference)
-[[redirects]]
-  from = "https://www.kiiltoloisto.fi/*"
-  to = "https://kiiltoloisto.fi/:splat"
-  status = 301
-  force = true
+# Redirect www to non-www (disabled until domain DNS propagates)
+# [[redirects]]
+#   from = "https://www.kiiltoloisto.fi/*"
+#   to = "https://kiiltoloisto.fi/:splat"
+#   status = 301
+#   force = true
 
 # Security redirects - Block common attack vectors
 [[redirects]]
