@@ -8,6 +8,7 @@ import { siteConfig } from '../lib/siteConfig';
 import { register as registerSW } from '../lib/pwa/serviceWorker';
 import { initDB } from '../lib/pwa/offlineStorage';
 import OfflineIndicator from '../components/PWA/OfflineIndicator';
+import { initPerformanceOptimizations } from '../utils/performance';
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
@@ -16,6 +17,9 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const canonicalUrl = siteConfig.siteUrl + (canonicalPath || '/');
 
   useEffect(() => {
+    // Initialize performance optimizations
+    initPerformanceOptimizations();
+
     // Initialize PWA features
     const initPWA = async () => {
       try {

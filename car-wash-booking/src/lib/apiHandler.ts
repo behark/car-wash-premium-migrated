@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { logger } from './logger';
 
-type MethodHandlers = Partial<Record<string, (req: NextApiRequest, res: NextApiResponse) => Promise<void>>>;
+type MethodHandlers = Partial<Record<string, (_req: NextApiRequest, _res: NextApiResponse) => Promise<void>>>;
 
 interface ApiHandlerOptions {
   requireHttps?: boolean;

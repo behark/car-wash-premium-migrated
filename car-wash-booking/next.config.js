@@ -2,7 +2,7 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: true, // Temporarily disabled to fix redirect loop issue
+  disable: process.env.NODE_ENV === 'development', // Disable only in dev
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -56,10 +56,20 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Removed 'output: export' to enable API routes and server-side rendering
-  // Required for booking system API endpoints and Netlify Functions
+  // No output export - let Netlify plugin handle SSR/ISR
   images: {
-    unoptimized: false, // Enable image optimization
+    domains: ['images.unsplash.com', 'plus.unsplash.com', 'images.pexels.com', 'kiiltoloisto.fi'],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+  },
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  experimental: {
+    optimizeCss: true,
   },
   // Temporarily disable custom headers for Netlify deployment debugging
   // async headers() {

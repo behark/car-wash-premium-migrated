@@ -1,20 +1,23 @@
-# Netlify Production Configuration - Fixed
-# Car Wash Booking System
+# Netlify Production Configuration
+# Car Wash Booking System - kiiltoloisto.fi
 
 [build]
-  command = "npm install && npm run build"
+  command = "npm run build"
   publish = ".next"
-  functions = "netlify/functions"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18"
+  NPM_FLAGS = "--force"
 
-# Include the Next.js plugin - REQUIRED for proper Next.js deployment
+# Essential Next.js Plugin for SSR/ISR Support
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Fixed environment URL configuration
+# ==========================================
+# ENVIRONMENT CONFIGURATION
+# ==========================================
+
 [context.production.environment]
   NEXTAUTH_URL = "https://kiiltoloisto.fi"
   NEXT_PUBLIC_SITE_URL = "https://kiiltoloisto.fi"
@@ -28,7 +31,7 @@
   NEXT_PUBLIC_SITE_URL = "${DEPLOY_URL}"
 
 # ==========================================
-# SECURITY HEADERS (Simplified)
+# HEADERS - Performance & Security
 # ==========================================
 
 [[headers]]
@@ -38,59 +41,55 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    X-DNS-Prefetch-Control = "on"
+    Link = '''
+      <https://fonts.googleapis.com>; rel=preconnect,
+      <https://fonts.gstatic.com>; rel=preconnect; crossorigin,
+      </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin
+    '''
 
-# API Headers
-[[headers]]
-  for = "/api/*"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-# Static Assets
+# Cache static assets aggressively
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# ==========================================
-# API REDIRECTS (Essential)
-# ==========================================
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-# API Routes to Netlify Functions
-[[redirects]]
-  from = "/api/services"
-  to = "/.netlify/functions/services-index"
-  status = 200
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/api/services/:id"
-  to = "/.netlify/functions/services-id"
-  status = 200
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/api/bookings/availability"
-  to = "/.netlify/functions/bookings-availability"
-  status = 200
+[[headers]]
+  for = "/*.avif"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/api/bookings/create"
-  to = "/.netlify/functions/bookings-create"
-  status = 200
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/api/bookings/:id"
-  to = "/.netlify/functions/bookings-id"
-  status = 200
+# API Headers - No cache for dynamic content
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
-[[redirects]]
-  from = "/api/payment/create-session"
-  to = "/.netlify/functions/payment-create-session"
-  status = 200
-
-[[redirects]]
-  from = "/api/payment/webhook"
-  to = "/.netlify/functions/payment-webhook"
-  status = 200
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # ==========================================
 # FUNCTIONS CONFIGURATION
@@ -99,3 +98,71 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  included_files = ["netlify/functions/**"]
+
+# Function-specific configurations for better performance
+[functions."services-index"]
+  schedule = "@daily"  # Warm up function daily
+
+[functions."bookings-availability"]
+  schedule = "@hourly"  # Keep warm for fast responses
+
+# ==========================================
+# REDIRECTS - API Routes to Functions
+# ==========================================
+
+# Service endpoints
+[[redirects]]
+  from = "/api/services"
+  to = "/.netlify/functions/services-index"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/services/:id"
+  to = "/.netlify/functions/services-id"
+  status = 200
+  force = true
+
+# Booking endpoints
+[[redirects]]
+  from = "/api/bookings/availability"
+  to = "/.netlify/functions/bookings-availability"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/bookings/create"
+  to = "/.netlify/functions/bookings-create"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/bookings/:id"
+  to = "/.netlify/functions/bookings-id"
+  status = 200
+  force = true
+
+# Payment endpoints
+[[redirects]]
+  from = "/api/payment/create-session"
+  to = "/.netlify/functions/payment-create-session"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/payment/webhook"
+  to = "/.netlify/functions/payment-webhook"
+  status = 200
+  force = true
+
+# ==========================================
+# DEV SETTINGS
+# ==========================================
+
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  port = 8888
+  publish = ".next"
+  autoLaunch = true

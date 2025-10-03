@@ -3,7 +3,7 @@ import { logger } from './logger';
 interface RateLimitRule {
   windowMs: number;
   maxRequests: number;
-  keyGenerator?: (req: any) => string;
+  keyGenerator?: (_req: any) => string;
 }
 
 interface RequestEntry {

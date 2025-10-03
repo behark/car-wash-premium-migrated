@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Webcam from 'react-webcam';
 
 interface CameraCaptureProps {
-  onCapture: (imageData: string, type: 'before' | 'after') => void;
+  onCapture: (_imageData: string, _type: 'before' | 'after') => void;
   onClose: () => void;
   type: 'before' | 'after';
   existingPhoto?: string;

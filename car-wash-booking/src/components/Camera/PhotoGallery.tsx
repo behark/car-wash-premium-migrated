@@ -10,8 +10,8 @@ import Image from 'next/image';
 interface PhotoGalleryProps {
   beforePhoto?: string;
   afterPhoto?: string;
-  onAddPhoto: (type: 'before' | 'after') => void;
-  onRemovePhoto: (type: 'before' | 'after') => void;
+  onAddPhoto: (_type: 'before' | 'after') => void;
+  onRemovePhoto: (_type: 'before' | 'after') => void;
   className?: string;
 }
 

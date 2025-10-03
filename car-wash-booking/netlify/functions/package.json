@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
-    "prisma": "^5.10.0",
     "@sendgrid/mail": "^7.4.0",
     "date-fns": "^2.29.0",
+    "nanoid": "^5.1.6",
+    "prisma": "^5.10.0",
     "zod": "^3.21.4"
   }
 }
