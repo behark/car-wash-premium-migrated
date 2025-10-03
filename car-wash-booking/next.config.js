@@ -1,9 +1,56 @@
-// Temporarily disable PWA to reduce build complexity
 const withPWA = require('next-pwa')({
   dest: 'public',
-  register: false,
+  register: true,
   skipWaiting: true,
-  disable: true, // Disable PWA for now to fix build issues
+  disable: process.env.NODE_ENV === 'development', // Disable only in dev
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 365 days
+        }
+      }
+    },
+    {
+      urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts-static',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 365 days
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: {
+          maxEntries: 60,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /api\/.*$/i,
+      handler: 'NetworkFirst',
+      method: 'GET',
+      options: {
+        cacheName: 'apis',
+        expiration: {
+          maxEntries: 16,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+        networkTimeoutSeconds: 10, // Fall back to cache if api does not response within 10 seconds
+      },
+    },
+  ],
 });
 
 /** @type {import('next').NextConfig} */
@@ -12,19 +59,18 @@ const nextConfig = {
   // No output export - let Netlify plugin handle SSR/ISR
   images: {
     domains: ['images.unsplash.com', 'plus.unsplash.com', 'images.pexels.com', 'kiiltoloisto.fi'],
-    formats: ['image/webp'],
-    deviceSizes: [640, 750, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
   swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Remove experimental features that might cause build issues
-  // experimental: {
-  //   optimizeCss: true,
-  // },
+  experimental: {
+    optimizeCss: true,
+  },
   // Temporarily disable custom headers for Netlify deployment debugging
   // async headers() {
   //   const csp = [
