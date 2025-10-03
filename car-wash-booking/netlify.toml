@@ -9,6 +9,7 @@
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18"
   NPM_FLAGS = "--force"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 # Essential Next.js Plugin for SSR/ISR Support
 [[plugins]]
