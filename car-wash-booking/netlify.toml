@@ -1,18 +1,23 @@
 # Netlify Production Configuration
-# Car Wash Booking System - Secure Deployment
+# Car Wash Booking System - Fixed Configuration
 
 [build]
-  command = "npm install --include=dev && prisma generate && npm run build"
+  command = "npm install && npm run build"
   publish = ".next"
   functions = "netlify/functions"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
+  NODE_VERSION = "18"
 
-# Automatic environment URL configuration
+# Include the Next.js plugin - REQUIRED for proper Next.js deployment
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Fixed environment URL configuration - using proper domain
 [context.production.environment]
-  NEXTAUTH_URL = "${URL}"
-  NEXT_PUBLIC_SITE_URL = "${URL}"
+  NEXTAUTH_URL = "https://kiiltoloisto.fi"
+  NEXT_PUBLIC_SITE_URL = "https://kiiltoloisto.fi"
 
 [context.deploy-preview.environment]
   NEXTAUTH_URL = "${DEPLOY_PREVIEW_URL}"
@@ -39,21 +44,8 @@
     # HSTS - Enforce HTTPS (2 years, include subdomains, preload)
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
 
-    # CSP - Content Security Policy (comprehensive)
-    Content-Security-Policy = '''
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.google.com https://www.gstatic.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://*.stripe.com;
-      font-src 'self' data: https://fonts.gstatic.com;
-      connect-src 'self' https://api.stripe.com https://api.sendgrid.com https://*.sentry.io;
-      frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://www.google.com;
-      frame-ancestors 'none';
-      base-uri 'self';
-      form-action 'self';
-      upgrade-insecure-requests;
-      block-all-mixed-content;
-    '''
+    # CSP - Content Security Policy (simplified for deployment fix)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
 
 # API Headers - No caching for dynamic content
 [[headers]]
@@ -109,12 +101,12 @@
   to = "/:splat"
   status = 301
 
-# Redirect www to non-www (disabled until domain DNS propagates)
-# [[redirects]]
-#   from = "https://www.kiiltoloisto.fi/*"
-#   to = "https://kiiltoloisto.fi/:splat"
-#   status = 301
-#   force = true
+# Redirect www to non-www
+[[redirects]]
+  from = "https://www.kiiltoloisto.fi/*"
+  to = "https://kiiltoloisto.fi/:splat"
+  status = 301
+  force = true
 
 # Security redirects - Block common attack vectors
 [[redirects]]

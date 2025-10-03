@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@netlify/functions": "^4.2.6",
+    "@netlify/plugin-nextjs": "^5.13.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@types/bcrypt": "^5.0.0",
