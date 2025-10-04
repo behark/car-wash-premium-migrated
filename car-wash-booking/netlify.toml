@@ -146,49 +146,8 @@
   status = 301
   force = true
 
-# Service endpoints
-[[redirects]]
-  from = "/api/services"
-  to = "/.netlify/functions/services-index"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/services-simple"
-  to = "/.netlify/functions/services-simple"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/test-basic"
-  to = "/.netlify/functions/test-basic"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/services/:id"
-  to = "/.netlify/functions/services-id"
-  status = 200
-  force = true
-
-# Booking endpoints
-[[redirects]]
-  from = "/api/bookings/availability"
-  to = "/.netlify/functions/bookings-availability"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/bookings/create"
-  to = "/.netlify/functions/bookings-create"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/api/bookings/:id"
-  to = "/.netlify/functions/bookings-id"
-  status = 200
-  force = true
+# NOTE: API routes now handled by Next.js instead of Netlify Functions
+# Removed conflicting redirects to allow Next.js API routes to work
 
 # Payment endpoints
 [[redirects]]
