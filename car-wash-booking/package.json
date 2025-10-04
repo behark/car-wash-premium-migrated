@@ -46,7 +46,6 @@
     "react-dom": "18.2.0",
     "react-qr-scanner": "^1.0.0-alpha.11",
     "react-webcam": "^7.2.0",
-    "stripe": "^19.0.0",
     "swiper": "^11.0.0",
     "twilio": "^4.19.0",
     "typescript": "^5.0.0",
@@ -57,9 +56,11 @@
     "date-fns": "^4.1.0",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^18.0.0",
+    "@types/nodemailer": "^7.0.2",
     "@types/qrcode": "^1.5.5",
     "@types/web-push": "^3.6.3",
-    "@types/react": "18.3.25"
+    "@types/react": "18.3.25",
+    "@types/ioredis": "^4.28.10"
   },
   "devDependencies": {
     "@netlify/functions": "^4.2.6",
