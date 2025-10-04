@@ -74,8 +74,11 @@ export async function executeAutomationRules(
 
   for (const rule of rules) {
     try {
-      const conditions = JSON.parse(rule.conditions || '[]') as AutomationCondition[];
-      const actions = JSON.parse(rule.actions) as AutomationAction[];
+      const conditionsStr = typeof rule.conditions === 'string' ? rule.conditions : JSON.stringify(rule.conditions || []);
+      const actionsStr = typeof rule.actions === 'string' ? rule.actions : JSON.stringify(rule.actions);
+
+      const conditions = JSON.parse(conditionsStr) as AutomationCondition[];
+      const actions = JSON.parse(actionsStr) as AutomationAction[];
 
       // Check if all conditions are met
       const conditionsMet = evaluateConditions(conditions, eventData);
