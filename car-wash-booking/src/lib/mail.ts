@@ -32,9 +32,7 @@ export async function sendBookingConfirmation(
     const errorMsg = `Email service not configured: ${validation.error}`;
     logger.warn(errorMsg);
 
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Email service configuration error');
-    }
+    // Return gracefully instead of throwing - allows site to work without emails
     return { success: false, error: validation.error };
   }
 

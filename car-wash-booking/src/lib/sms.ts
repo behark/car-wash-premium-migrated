@@ -32,9 +32,7 @@ export async function sendSMS(to: string, body: string): Promise<{ success: bool
     const errorMsg = `SMS service not configured: ${validation.error}`;
     logger.warn(errorMsg);
 
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('SMS service configuration error');
-    }
+    // Return gracefully instead of throwing - allows site to work without SMS
     return { success: false, error: validation.error };
   }
 
