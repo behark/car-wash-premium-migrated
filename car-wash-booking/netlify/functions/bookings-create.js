@@ -2,6 +2,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { format, addMinutes } = require('date-fns');
 const sgMail = require('@sendgrid/mail');
+const { nanoid } = require('nanoid');
 
 const prisma = new PrismaClient();
 
