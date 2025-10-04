@@ -4,7 +4,7 @@
 
 [build]
   base    = "car-wash-booking"
-  command = "npm run validate:build && npm install && prisma generate && npm run build && cd netlify/functions && npm install && npx prisma generate"
+  command = "npm install && prisma generate && npm run build && cd netlify/functions && npm install && npx prisma generate"
   # 'publish' directory is now handled automatically by the Next.js plugin
   # Build caching for improved performance
   publish = ".next"
@@ -109,8 +109,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
   included_files = ["netlify/functions/**"]
-  # Optimize function performance
-  external_node_modules = ["@prisma/client", "prisma"]
 
 # Function-specific configurations for better performance
 [functions."services-index"]
