@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { createBooking } from '../../../lib/booking';
 import { bookingConfirmationTemplate } from '../../../lib/email-templates';
 import sgMail from '@sendgrid/mail';
-import { siteConfig } from '../../../lib/siteConfig';
 import { z } from 'zod';
 
 if (process.env.SENDGRID_API_KEY) {

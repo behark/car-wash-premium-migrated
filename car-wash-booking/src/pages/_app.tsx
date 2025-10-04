@@ -28,18 +28,18 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
 
         // Register service worker
         registerSW({
-          onSuccess: (registration) => {
-            console.log('SW registered successfully');
+          onSuccess: () => {
+            // SW registered successfully
           },
-          onUpdate: (registration) => {
-            console.log('SW update available');
+          onUpdate: () => {
+            // SW update available
             setSwUpdateAvailable(true);
           },
           onOffline: () => {
-            console.log('App is offline');
+            // App is offline
           },
           onOnline: () => {
-            console.log('App is online');
+            // App is online
           },
         });
 

@@ -141,7 +141,7 @@ export function apiGuard(
             return res.status(401).json({ error: 'Authentication required' });
           }
 
-          session = serverSession as Session;
+          session = serverSession as unknown as Session;
 
           if (options.requireAdmin && session.user?.role !== 'admin') {
             logSecurityEvent('unauthorized_admin_access', {

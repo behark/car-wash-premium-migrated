@@ -5,6 +5,8 @@
 
 import webpush from 'web-push';
 import { prisma } from '../prisma';
+import { logger } from '../logger';
+import { NotificationType } from '@prisma/client';
 
 // Configure web-push with VAPID keys
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
@@ -21,7 +23,7 @@ export interface PushNotificationPayload {
   icon?: string;
   badge?: string;
   image?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   actions?: Array<{
     action: string;
     title: string;
@@ -77,14 +79,14 @@ export async function sendPushNotification(
       data: {
         subscriptionId,
         bookingId: options.bookingId,
-        type: (options.type || 'CUSTOM') as any,
+        type: (options.type as NotificationType) || 'CUSTOM',
         title: payload.title,
         body: payload.body,
         icon: payload.icon,
         badge: payload.badge,
         image: payload.image,
-        data: payload.data || {},
-        actions: payload.actions || [],
+        data: payload.data as any || {},
+        actions: payload.actions as any || [],
         scheduledFor: options.scheduledFor,
         status: options.scheduledFor ? 'PENDING' : 'SENT',
       },
@@ -96,14 +98,10 @@ export async function sendPushNotification(
     }
 
     // Send the notification
-    await webpush.sendNotification(
-      pushSubscription,
-      JSON.stringify(payload),
-      {
-        urgency: 'normal',
-        TTL: 24 * 60 * 60, // 24 hours
-      }
-    );
+    await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+      urgency: 'normal',
+      TTL: 24 * 60 * 60, // 24 hours
+    });
 
     // Update notification status
     await prisma.pushNotification.update({
@@ -121,12 +119,12 @@ export async function sendPushNotification(
     });
 
     return { success: true };
-
-  } catch (error: any) {
-    console.error('Failed to send push notification:', error);
+  } catch (error) {
+    const err = error as { statusCode?: number; message?: string };
+    logger.error('Failed to send push notification', { error: err });
 
     // If subscription is invalid, mark as inactive
-    if (error.statusCode === 410 || error.statusCode === 404) {
+    if (err.statusCode === 410 || err.statusCode === 404) {
       await prisma.pushSubscription.update({
         where: { id: subscriptionId },
         data: { isActive: false },
@@ -138,18 +136,18 @@ export async function sendPushNotification(
       await prisma.pushNotification.updateMany({
         where: {
           subscriptionId,
-          type: options.type as any,
+          type: options.type as NotificationType,
           status: 'PENDING',
         },
         data: {
           status: 'FAILED',
-          errorMessage: error.message,
+          errorMessage: err.message || 'Unknown error',
           attempts: { increment: 1 },
         },
       });
     }
 
-    return { success: false, error: error.message };
+    return { success: false, error: err.message || 'Unknown error' };
   }
 }
 
@@ -175,7 +173,7 @@ export async function sendBulkPushNotifications(
   for (let i = 0; i < subscriptionIds.length; i += batchSize) {
     const batch = subscriptionIds.slice(i, i + batchSize);
 
-    const promises = batch.map(async (subscriptionId) => {
+    const promises = batch.map(async subscriptionId => {
       const result = await sendPushNotification(subscriptionId, payload, options);
       if (result.success) {
         results.success++;
@@ -457,7 +455,7 @@ export async function processScheduledNotifications(): Promise<void> {
     },
   });
 
-  console.log(`Processing ${pendingNotifications.length} scheduled notifications`);
+  logger.info('Processing scheduled notifications', { count: pendingNotifications.length });
 
   for (const notification of pendingNotifications) {
     if (!notification.subscription.isActive) {
@@ -486,19 +484,15 @@ export async function processScheduledNotifications(): Promise<void> {
         icon: notification.icon || undefined,
         badge: notification.badge || undefined,
         image: notification.image || undefined,
-        data: notification.data as any,
-        actions: notification.actions as any,
+        data: notification.data as Record<string, unknown>,
+        actions: notification.actions as Array<{ action: string; title: string; icon?: string }>,
       };
 
       // Send notification
-      await webpush.sendNotification(
-        pushSubscription,
-        JSON.stringify(payload),
-        {
-          urgency: 'normal',
-          TTL: 24 * 60 * 60, // 24 hours
-        }
-      );
+      await webpush.sendNotification(pushSubscription, JSON.stringify(payload), {
+        urgency: 'normal',
+        TTL: 24 * 60 * 60, // 24 hours
+      });
 
       // Update status
       await prisma.pushNotification.update({
@@ -509,13 +503,13 @@ export async function processScheduledNotifications(): Promise<void> {
         },
       });
 
-      console.log(`Sent scheduled notification ${notification.id}`);
-
-    } catch (error: any) {
-      console.error(`Failed to send scheduled notification ${notification.id}:`, error);
+      logger.info('Sent scheduled notification', { notificationId: notification.id });
+    } catch (error) {
+      const err = error as { statusCode?: number; message?: string };
+      logger.error('Failed to send scheduled notification', { notificationId: notification.id, error: err });
 
       // If subscription is invalid, mark as inactive
-      if (error.statusCode === 410 || error.statusCode === 404) {
+      if (err.statusCode === 410 || err.statusCode === 404) {
         await prisma.pushSubscription.update({
           where: { id: notification.subscription.id },
           data: { isActive: false },
@@ -527,7 +521,7 @@ export async function processScheduledNotifications(): Promise<void> {
         where: { id: notification.id },
         data: {
           status: notification.attempts >= 2 ? 'FAILED' : 'PENDING',
-          errorMessage: error.message,
+          errorMessage: err.message || 'Unknown error',
           attempts: { increment: 1 },
         },
       });
@@ -577,7 +571,7 @@ export async function cleanupNotifications(): Promise<void> {
     },
   });
 
-  console.log('Notification cleanup completed');
+  logger.info('Notification cleanup completed');
 }
 
 const pushServer = {
