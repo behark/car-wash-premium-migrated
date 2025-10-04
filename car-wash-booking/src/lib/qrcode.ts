@@ -367,7 +367,7 @@ export function parseBookingQRData(qrData: string): BookingQRData | null {
  */
 export async function generateQuickBookingQR(
   serviceId: number,
-  serviceName: string,
+  _serviceName: string,
   options: {
     size?: number;
     format?: 'png' | 'svg';
