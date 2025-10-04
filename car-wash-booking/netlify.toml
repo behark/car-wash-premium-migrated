@@ -24,14 +24,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Build optimization plugins
-[[plugins]]
-  package = "netlify-plugin-cache-nextjs"
-
-# Checksum plugin for build caching
-[[plugins]]
-  package = "netlify-plugin-checksum-retry"
-
 # ==========================================
 # ENVIRONMENT CONFIGURATION
 # ==========================================
@@ -120,9 +112,6 @@
   # Optimize function performance
   external_node_modules = ["@prisma/client", "prisma"]
 
-  # Default function timeout
-  timeout = 10
-
 # Function-specific configurations for better performance
 [functions."services-index"]
   schedule = "@daily"
@@ -169,6 +158,12 @@
 [[redirects]]
   from = "/api/services-simple"
   to = "/.netlify/functions/services-simple"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/test-basic"
+  to = "/.netlify/functions/test-basic"
   status = 200
   force = true
 
