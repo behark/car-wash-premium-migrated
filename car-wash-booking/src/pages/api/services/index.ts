@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../lib/prisma';
+import { prisma } from '../../../lib/prisma-simple';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { z } from 'zod';
@@ -29,9 +29,27 @@ export default async function handler(
         orderBy: { priceCents: 'asc' },
       });
 
+      const formattedServices = services.map(service => ({
+        id: service.id,
+        titleFi: service.titleFi,
+        titleEn: service.titleEn,
+        descriptionFi: service.descriptionFi,
+        descriptionEn: service.descriptionEn,
+        durationMinutes: service.durationMinutes,
+        priceCents: service.priceCents,
+        price: (service.priceCents / 100).toFixed(2),
+        isActive: service.isActive,
+        createdAt: service.createdAt.toISOString(),
+        updatedAt: service.updatedAt.toISOString(),
+      }));
+
       res.status(200).json({
         success: true,
-        services,
+        data: formattedServices,
+        meta: {
+          total: formattedServices.length,
+          active: formattedServices.filter(s => s.isActive).length,
+        },
       });
     } catch (error: any) {
       console.error('Get services error:', error);

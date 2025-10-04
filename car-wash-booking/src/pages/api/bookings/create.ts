@@ -1,24 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createBooking } from '../../../lib/booking';
-import { bookingConfirmationTemplate } from '../../../lib/email-templates';
-import sgMail from '@sendgrid/mail';
-import { z } from 'zod';
+import { prisma } from '../../../lib/prisma-simple';
+import { BookingStatus, PaymentStatus } from '@prisma/client';
+import { format, addMinutes } from 'date-fns';
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Simple confirmation code generator
+function generateConfirmationCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
-
-const bookingSchema = z.object({
-  serviceId: z.number(),
-  vehicleType: z.string(),
-  date: z.string().transform(str => new Date(str)),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/),
-  customerName: z.string().min(2),
-  customerEmail: z.string().email(),
-  customerPhone: z.string().min(8),
-  licensePlate: z.string().optional(),
-  notes: z.string().optional(),
-});
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,56 +22,121 @@ export default async function handler(
   }
 
   try {
-    const validatedData = bookingSchema.parse(req.body);
+    const {
+      serviceId,
+      vehicleType,
+      date,
+      startTime,
+      customerName,
+      customerEmail,
+      customerPhone,
+      licensePlate,
+      notes
+    } = req.body;
 
-    const booking = await createBooking(validatedData);
-
-    if (process.env.SENDGRID_API_KEY && process.env.SENDER_EMAIL) {
-      const emailTemplate = bookingConfirmationTemplate(booking);
-
-      try {
-        await sgMail.send({
-          to: booking.customerEmail,
-          from: process.env.SENDER_EMAIL,
-          subject: emailTemplate.subject,
-          text: emailTemplate.text,
-          html: emailTemplate.html,
-        });
-      } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError);
-      }
+    // Basic validation
+    if (!serviceId || !vehicleType || !date || !startTime || !customerName || !customerEmail || !customerPhone) {
+      return res.status(400).json({
+        error: 'Missing required fields'
+      });
     }
+
+    // Get service
+    const service = await prisma.service.findUnique({
+      where: { id: parseInt(serviceId) },
+    });
+
+    if (!service) {
+      return res.status(404).json({
+        error: 'Service not found'
+      });
+    }
+
+    const startDateTime = new Date(date);
+    const [hours, minutes] = startTime.split(':').map(Number);
+    startDateTime.setHours(hours, minutes, 0, 0);
+
+    const endDateTime = addMinutes(startDateTime, service.durationMinutes);
+
+    // Check for overlapping bookings
+    const overlappingBooking = await prisma.booking.findFirst({
+      where: {
+        date: new Date(date),
+        status: {
+          notIn: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
+        },
+        OR: [
+          {
+            AND: [
+              { startTime: { lte: format(startDateTime, 'HH:mm') } },
+              { endTime: { gt: format(startDateTime, 'HH:mm') } },
+            ],
+          },
+          {
+            AND: [
+              { startTime: { lt: format(endDateTime, 'HH:mm') } },
+              { endTime: { gte: format(endDateTime, 'HH:mm') } },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (overlappingBooking) {
+      return res.status(409).json({
+        error: 'Time slot is not available'
+      });
+    }
+
+    const confirmationCode = generateConfirmationCode();
+
+    // Create the booking
+    const booking = await prisma.booking.create({
+      data: {
+        serviceId: parseInt(serviceId),
+        vehicleType,
+        date: new Date(date),
+        startTime: format(startDateTime, 'HH:mm'),
+        endTime: format(endDateTime, 'HH:mm'),
+        duration: service.durationMinutes,
+        priceCents: service.priceCents,
+        status: BookingStatus.PENDING,
+        customerName,
+        customerEmail,
+        customerPhone,
+        licensePlate: licensePlate || null,
+        notes: notes || null,
+        paymentStatus: PaymentStatus.PENDING,
+        confirmationCode,
+      },
+      include: {
+        service: true,
+      },
+    });
 
     res.status(201).json({
       success: true,
-      booking: {
-        id: booking.id,
-        confirmationCode: booking.confirmationCode,
-        service: booking.service,
-        date: booking.date,
-        startTime: booking.startTime,
-        endTime: booking.endTime,
-        customerName: booking.customerName,
-        status: booking.status,
+      data: {
+        booking: {
+          id: booking.id,
+          confirmationCode: booking.confirmationCode,
+          service: {
+            titleFi: booking.service.titleFi,
+            durationMinutes: booking.service.durationMinutes,
+            priceCents: booking.service.priceCents,
+          },
+          date: booking.date.toISOString(),
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          customerName: booking.customerName,
+          customerEmail: booking.customerEmail,
+          status: booking.status,
+          paymentStatus: booking.paymentStatus,
+        },
       },
     });
   } catch (error: any) {
     console.error('Booking creation error:', error);
-
-    if (error.name === 'ZodError') {
-      return res.status(400).json({
-        error: 'Invalid input data',
-        details: error.errors,
-      });
-    }
-
-    if (error.message === 'Service not found') {
-      return res.status(404).json({ error: 'Service not found' });
-    }
-
-    if (error.message === 'Time slot is not available') {
-      return res.status(409).json({ error: 'Time slot is not available' });
-    }
 
     res.status(500).json({
       error: 'Failed to create booking',
