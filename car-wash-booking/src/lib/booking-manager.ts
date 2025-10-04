@@ -5,7 +5,7 @@
  */
 
 import { prisma } from './prisma';
-import { BookingStatus, PaymentStatus, AutomationEvent } from '@prisma/client';
+import { BookingStatus, PaymentStatus } from '@prisma/client';
 import {
   format,
   addMinutes,
