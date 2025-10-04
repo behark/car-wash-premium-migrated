@@ -14,14 +14,15 @@ build/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 
-# Environment variables
+# Environment variables - NEVER commit these!
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.*.example
+!.env.*.template
 .env.bak
 .env.backup
+.env.netlify.production
 
 # IDE
 .vscode/

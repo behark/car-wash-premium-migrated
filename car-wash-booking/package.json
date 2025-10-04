@@ -50,6 +50,7 @@
     "twilio": "^4.19.0",
     "typescript": "^5.0.0",
     "web-push": "^3.6.0",
+    "web-vitals": "^5.1.0",
     "workbox-webpack-plugin": "^7.0.0",
     "zod": "^4.1.11",
     "stripe": "^19.0.0",
