@@ -4,7 +4,7 @@
 
 [build]
   base    = "car-wash-booking" # <<< ADDED THIS LINE
-  command = "npm install && prisma generate && npm run build" # <<< UPDATED THIS LINE
+  command = "npm install && prisma generate && npm run build && cd netlify/functions && npm install && npx prisma generate" # <<< UPDATED THIS LINE
   # 'publish' directory is now handled automatically by the Next.js plugin
 
 [build.environment]
