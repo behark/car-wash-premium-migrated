@@ -7,6 +7,7 @@ import SEO from '../../components/SEO';
 import { siteConfig } from '../../lib/siteConfig';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
+import { getBookingByConfirmationCode, BookingData } from '../../lib/booking-storage';
 
 interface BookingDetails {
   id: number;

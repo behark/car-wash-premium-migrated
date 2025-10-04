@@ -6,24 +6,10 @@ import SEO from '../components/SEO';
 import FloatingContact from '../components/FloatingContact';
 import BookingPhotos from '../components/Camera/BookingPhotos';
 import { siteConfig } from '../lib/siteConfig';
+import { getActiveServices, getServiceById, Service } from '../lib/static-services';
+import { generateTimeSlots, saveBooking, TimeSlot } from '../lib/booking-storage';
 
-interface Service {
-  id: number;
-  titleFi: string;
-  titleEn: string;
-  descriptionFi: string;
-  descriptionEn: string;
-  priceCents: number;
-  durationMinutes: number;
-  capacity: number;
-  image?: string;
-  isActive: boolean;
-}
-
-interface TimeSlot {
-  time: string;
-  available: boolean;
-}
+// Service and TimeSlot interfaces imported from static-services and booking-storage
 
 export default function Booking() {
   const router = useRouter();
@@ -55,112 +41,77 @@ export default function Booking() {
     'Muu'
   ];
 
-  const fetchServices = useCallback(async () => {
+  const loadServices = useCallback(() => {
     try {
-      const response = await fetch('/.netlify/functions/services-index?active=true');
-      const data = await response.json();
-      if (data.success) {
-        setServices(data.services);
-      }
+      const activeServices = getActiveServices();
+      setServices(activeServices);
     } catch (error) {
-      console.error('Failed to fetch services:', error);
+      console.error('Failed to load services:', error);
     }
   }, []);
 
-  const fetchAvailableTimeSlots = useCallback(async () => {
+  const loadAvailableTimeSlots = useCallback(() => {
+    if (!selectedDate || !selectedService) return;
+
     try {
-      const response = await fetch(
-        `/.netlify/functions/bookings-availability?date=${selectedDate}&serviceId=${selectedService}`
-      );
-      const data = await response.json();
-      if (data.success && data.timeSlots) {
-        setTimeSlots(data.timeSlots);
-      } else if (data.available === false) {
-        // Day is closed
-        setTimeSlots([]);
-      } else {
-        console.error('Unexpected response format:', data);
-        setTimeSlots([]);
-      }
+      const slots = generateTimeSlots(selectedDate, selectedService);
+      setTimeSlots(slots);
+      setError(''); // Clear any previous errors
     } catch (error) {
-      console.error('Failed to fetch availability:', error);
+      console.error('Failed to generate time slots:', error);
       setError('Ei voitu hakea vapaita aikoja. Yritä uudelleen.');
       setTimeSlots([]);
     }
   }, [selectedDate, selectedService]);
 
-  // Fetch services on component mount
+  // Load services on component mount
   useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    loadServices();
+  }, [loadServices]);
 
-  // Fetch available time slots when date and service are selected
+  // Load available time slots when date and service are selected
   useEffect(() => {
-    if (selectedDate && selectedService) {
-      fetchAvailableTimeSlots();
-    }
-  }, [selectedDate, selectedService, fetchAvailableTimeSlots]);
+    loadAvailableTimeSlots();
+  }, [loadAvailableTimeSlots]);
 
   const handleBooking = async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Create booking
-      const bookingResponse = await fetch('/.netlify/functions/bookings-create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceId: selectedService,
-          vehicleType,
-          date: selectedDate,
-          startTime: selectedTime,
-          customerName: customerInfo.name,
-          customerEmail: customerInfo.email,
-          customerPhone: customerInfo.phone,
-          licensePlate: customerInfo.licensePlate,
-          notes: customerInfo.notes,
-        }),
-      });
-
-      const bookingData = await bookingResponse.json();
-
-      if (!bookingResponse.ok) {
-        throw new Error(bookingData.error || 'Varauksen tekeminen epäonnistui');
+      // Validate required fields
+      if (!selectedService || !selectedDate || !selectedTime || !vehicleType ||
+          !customerInfo.name || !customerInfo.email || !customerInfo.phone) {
+        throw new Error('Kaikki pakolliset kentät täytyy täyttää');
       }
 
-      // For now, skip payment and go directly to confirmation
-      // This is for testing purposes - in production you'd handle payment first
-      console.log('Booking created successfully:', bookingData.booking);
+      // Get service data
+      const service = getServiceById(selectedService);
+      if (!service) {
+        throw new Error('Palvelua ei löytynyt');
+      }
+
+      // Create booking using localStorage
+      const booking = saveBooking({
+        serviceId: selectedService,
+        serviceName: service.titleFi,
+        servicePrice: service.price,
+        vehicleType,
+        date: selectedDate,
+        time: selectedTime,
+        duration: service.durationMinutes,
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        customerPhone: customerInfo.phone,
+        licensePlate: customerInfo.licensePlate || undefined,
+        notes: customerInfo.notes || undefined,
+      });
+
+      console.log('Booking created successfully:', booking);
 
       // Redirect to confirmation page
-      router.push(`/booking/confirmation?booking=${bookingData.booking.confirmationCode}`);
+      router.push(`/booking/confirmation?booking=${booking.confirmationCode}`);
 
-      // TODO: Add payment handling back when Stripe is configured
-      // const paymentResponse = await fetch('/api/payment/create-session', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     bookingId: bookingData.booking.id,
-      //   }),
-      // });
-
-      // const paymentData = await paymentResponse.json();
-
-      // if (!paymentResponse.ok) {
-      //   throw new Error(paymentData.error || 'Maksusession luominen epäonnistui');
-      // }
-
-      // // Redirect to Stripe checkout
-      // if (paymentData.url) {
-      //   window.location.href = paymentData.url;
-      // } else {
-      //   throw new Error('Maksulinkki puuttuu');
-      // }
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
