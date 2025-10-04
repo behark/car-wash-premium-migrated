@@ -19,6 +19,14 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "prisma/**/*.ts"],
-  "exclude": ["node_modules", "netlify/functions/**/*"]
+  "include": [
+    "next-env.d.ts", 
+    "**/*.ts", 
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules", 
+    "netlify/functions/**/*", 
+    "prisma"
+  ]
 }
