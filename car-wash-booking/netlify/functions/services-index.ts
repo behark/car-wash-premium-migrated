@@ -1,9 +1,8 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
 const handler: Handler = async (event: HandlerEvent) => {
+  const prisma = new PrismaClient();
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -45,8 +44,11 @@ const handler: Handler = async (event: HandlerEvent) => {
         body: JSON.stringify({
           error: 'Failed to get services',
           message: error.message,
+          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         }),
       };
+    } finally {
+      await prisma.$disconnect();
     }
   } else if (event.httpMethod === 'POST') {
     // Admin authentication would need to be handled differently in serverless
