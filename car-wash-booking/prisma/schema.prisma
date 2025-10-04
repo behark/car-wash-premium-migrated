@@ -25,7 +25,7 @@ model Service {
 }
 
 model Booking {
-  id                Int           @id @default(autoincrement())
+  id                Int                @id @default(autoincrement())
   serviceId         Int
   vehicleType       String
   date              DateTime
@@ -33,29 +33,44 @@ model Booking {
   endTime           String
   duration          Int
   priceCents        Int
-  status            BookingStatus @default(PENDING)
+  status            BookingStatus      @default(PENDING)
   customerName      String
   customerEmail     String
   customerPhone     String
   notes             String?
-  paymentStatus     PaymentStatus @default(PENDING)
+  paymentStatus     PaymentStatus      @default(PENDING)
   paymentIntentId   String?
   stripeSessionId   String?
-  confirmationCode  String?       @unique
+  confirmationCode  String?            @unique
   adminNotes        String?
   cancelledAt       DateTime?
   completedAt       DateTime?
-  notificationsSent Int           @default(0)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  notificationsSent Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   timeSlotId        Int?
   licensePlate      String?
-  service           Service       @relation(fields: [serviceId], references: [id])
-  timeSlot          TimeSlot?     @relation(fields: [timeSlotId], references: [id])
+  // TastyIgniter-inspired enhancements
+  assignedStaffId   Int?
+  assignedBayId     Int?
+  assignedAt        DateTime?
+  assignedBy        String?
+  cancellationReason String?
+  guestCount        Int                @default(1)
+  statusHistory     Json?              // Array of status change records
+  // Relations
+  service           Service            @relation(fields: [serviceId], references: [id])
+  timeSlot          TimeSlot?          @relation(fields: [timeSlotId], references: [id])
+  assignedStaff     Staff?             @relation(fields: [assignedStaffId], references: [id])
+  assignedBay       WashBay?           @relation(fields: [assignedBayId], references: [id])
+  statusHistoryLog  BookingStatusHistory[]
 
   @@index([date, startTime])
   @@index([customerEmail])
   @@index([confirmationCode])
+  @@index([assignedStaffId])
+  @@index([assignedBayId])
+  @@index([status])
 }
 
 model Testimonial {
@@ -252,4 +267,136 @@ enum NotificationStatus {
   FAILED
   CANCELLED
   EXPIRED
+}
+
+// TastyIgniter-inspired models for enhanced booking management
+
+model WashBay {
+  id             Int       @id @default(autoincrement())
+  name           String
+  bayNumber      Int       @unique
+  minCapacity    Int       @default(1) // Minimum vehicle size (1=small, 2=medium, 3=large)
+  maxCapacity    Int       @default(3) // Maximum vehicle size
+  shape          String    @default("rectangular") // For future floor plan visualization
+  isEnabled      Boolean   @default(true)
+  location       String?   // Physical location description
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bookings       Booking[]
+
+  @@index([isEnabled])
+}
+
+model Staff {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  phone       String?
+  role        StaffRole @default(OPERATOR)
+  isActive    Boolean   @default(true)
+  specialties String?   // JSON array of specialties
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+
+  @@index([isActive])
+  @@index([role])
+}
+
+model BookingStatusHistory {
+  id               Int           @id @default(autoincrement())
+  bookingId        Int
+  fromStatus       BookingStatus?
+  toStatus         BookingStatus
+  changedBy        String        // "system", "customer", "admin", or user email
+  changedByType    String        @default("system") // "system", "customer", "admin", "staff"
+  reason           String?
+  notes            String?
+  metadata         Json?         // Additional contextual data
+  createdAt        DateTime      @default(now())
+  booking          Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([createdAt])
+}
+
+model BookingConfiguration {
+  id                      Int      @id @default(autoincrement())
+  key                     String   @unique
+  // Time slot settings
+  intervalMinutes         Int      @default(30)        // Time slot interval
+  leadTimeHours           Int      @default(2)         // Minimum hours in advance to book
+  maxAdvanceDays          Int      @default(30)        // Maximum days in advance to book
+  // Cancellation settings
+  cancellationDeadlineHours Int    @default(24)       // Hours before booking to allow cancellation
+  allowCustomerCancellation Boolean @default(true)
+  // Capacity settings
+  defaultBayCapacity      Int      @default(1)
+  enableAutoBayAssignment Boolean  @default(true)
+  // Workflow settings
+  autoConfirmBookings     Boolean  @default(false)
+  requirePaymentUpfront   Boolean  @default(true)
+  // Notification settings
+  sendReminderHours       Int      @default(24)
+  enableSmsNotifications  Boolean  @default(true)
+  enablePushNotifications Boolean  @default(true)
+  // Values (stored as JSON for flexibility)
+  value                   String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([key])
+}
+
+model AutomationRule {
+  id          Int                @id @default(autoincrement())
+  name        String
+  description String?
+  eventType   AutomationEvent
+  conditions  Json?              // Array of condition objects
+  actions     Json               // Array of action objects (email, sms, push, webhook)
+  isActive    Boolean            @default(true)
+  priority    Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  executions  AutomationExecution[]
+
+  @@index([eventType])
+  @@index([isActive])
+}
+
+model AutomationExecution {
+  id             Int            @id @default(autoincrement())
+  ruleId         Int
+  bookingId      Int?
+  status         String         // "success", "failed", "skipped"
+  result         Json?          // Execution result data
+  errorMessage   String?
+  executedAt     DateTime       @default(now())
+  rule           AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([bookingId])
+  @@index([executedAt])
+}
+
+enum StaffRole {
+  OPERATOR
+  SUPERVISOR
+  MANAGER
+  ADMIN
+}
+
+enum AutomationEvent {
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_STATUS_CHANGED
+  BOOKING_ASSIGNED
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  BOOKING_NO_SHOW
+  PAYMENT_RECEIVED
+  REMINDER_24H
+  REMINDER_2H
 }
