@@ -114,6 +114,19 @@
 # REDIRECTS - API Routes to Functions
 # ==========================================
 
+# Force HTTPS redirect
+[[redirects]]
+  from = "http://kiiltoloisto.fi/*"
+  to = "https://kiiltoloisto.fi/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.kiiltoloisto.fi/*"
+  to = "https://www.kiiltoloisto.fi/:splat"
+  status = 301
+  force = true
+
 # Service endpoints
 [[redirects]]
   from = "/api/services"

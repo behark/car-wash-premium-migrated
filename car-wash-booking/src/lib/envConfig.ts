@@ -26,6 +26,15 @@ interface EnvConfig {
     fromNumber: string;
     isConfigured: boolean;
   };
+  stripe: {
+    secretKey: string;
+    publishableKey: string;
+    isConfigured: boolean;
+  };
+  maps: {
+    apiKey: string;
+    isConfigured: boolean;
+  };
   app: {
     nodeEnv: string;
     siteUrl: string;
@@ -73,6 +82,18 @@ export function getEnvironmentConfig(): EnvConfig {
         process.env.TWILIO_AUTH_TOKEN &&
         process.env.TWILIO_FROM
       )
+    },
+    stripe: {
+      secretKey: process.env.STRIPE_SECRET_KEY || '',
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+      isConfigured: !!(
+        process.env.STRIPE_SECRET_KEY?.startsWith('sk_') &&
+        process.env.STRIPE_PUBLISHABLE_KEY?.startsWith('pk_')
+      )
+    },
+    maps: {
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+      isConfigured: !!(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
     },
     app: {
       nodeEnv: process.env.NODE_ENV || 'development',

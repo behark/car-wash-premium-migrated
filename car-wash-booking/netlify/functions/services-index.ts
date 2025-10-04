@@ -1,22 +1,9 @@
-import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-const createServiceSchema = z.object({
-  titleFi: z.string().min(2),
-  titleEn: z.string().min(2),
-  descriptionFi: z.string().min(10),
-  descriptionEn: z.string().min(10),
-  priceCents: z.number().min(0),
-  durationMinutes: z.number().min(15),
-  capacity: z.number().min(1).default(1),
-  image: z.string().url().optional(),
-  isActive: z.boolean().default(true),
-});
-
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',

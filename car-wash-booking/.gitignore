@@ -7,6 +7,12 @@ yarn-error.log*
 # Production build
 .next/
 out/
+dist/
+build/
+
+# TypeScript build info
+*.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Environment variables
 .env
@@ -14,17 +20,32 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.bak
+.env.backup
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
 # Logs
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Runtime data
 pids/
@@ -34,6 +55,7 @@ pids/
 
 # Coverage directory used by tools like istanbul
 coverage/
+*.lcov
 
 # nyc test coverage
 .nyc_output
@@ -41,11 +63,23 @@ coverage/
 # ESLint cache
 .eslintcache
 
-# Prisma
-/prisma/migrations/
+# Prisma - Keep migrations in source control
+# /prisma/migrations/
 
 # Vercel
 .vercel
 
+# Netlify
+.netlify/
+
 # Local development
 *.local
+
+# Test files
+**/*.test.js
+**/*.spec.js
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -1,4 +1,4 @@
-import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import Stripe from 'stripe';
@@ -12,7 +12,7 @@ const createSessionSchema = z.object({
   bookingId: z.number(),
 });
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',

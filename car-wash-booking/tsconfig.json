@@ -17,17 +17,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "next-env.d.ts", 
-    "**/*.ts", 
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules", 
-    "netlify/functions/**/*", 
-    "prisma",
-    "scripts"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "netlify/functions/**/*", "out", ".next", "dist", "build", "prisma", "scripts"]
 }

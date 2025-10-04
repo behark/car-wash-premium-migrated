@@ -12,7 +12,7 @@ import usePhotoManager from '../../lib/camera/usePhotoManager';
 interface BookingPhotosProps {
   bookingId?: number;
   className?: string;
-  onPhotosChange?: (_photos: any[]) => void;
+  onPhotosChange?: (photos: any[]) => void;
   showInstructions?: boolean;
 }
 

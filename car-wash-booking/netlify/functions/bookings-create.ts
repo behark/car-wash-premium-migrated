@@ -1,4 +1,4 @@
-import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
 import { z } from 'zod';
 import { format, addMinutes } from 'date-fns';
@@ -68,7 +68,7 @@ Kiilto & Loisto
   };
 }
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',

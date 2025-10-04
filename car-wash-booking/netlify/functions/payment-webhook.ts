@@ -1,4 +1,4 @@
-import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
 import Stripe from 'stripe';
 import sgMail from '@sendgrid/mail';
@@ -51,7 +51,7 @@ Kiilto & Loisto
   };
 }
 
-const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
