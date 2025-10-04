@@ -10,19 +10,37 @@ import { sanitizeRequestBody, isMalicious } from './sanitizer';
 import { validateWithSchema } from './validator';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { logger } from '../logger';
+
+// Type definitions
+interface SessionUser {
+  id: string;
+  email: string;
+  role: string;
+}
+
+interface Session {
+  user: SessionUser;
+}
+
+interface ApiKeyData {
+  name: string;
+  permissions: string[];
+  rateLimit: number;
+}
 
 // API key management
-const API_KEYS = new Map<string, { name: string; permissions: string[]; rateLimit: number }>();
+const API_KEYS = new Map<string, ApiKeyData>();
 
 // Initialize API keys from environment
 if (process.env.API_KEYS) {
   try {
     const keys = JSON.parse(process.env.API_KEYS);
-    Object.entries(keys).forEach(([key, value]: [string, any]) => {
-      API_KEYS.set(key, value);
+    Object.entries(keys).forEach(([key, value]) => {
+      API_KEYS.set(key, value as ApiKeyData);
     });
   } catch (e) {
-    console.error('Failed to parse API_KEYS:', e);
+    logger.error('Failed to parse API_KEYS', { error: e instanceof Error ? e.message : String(e) });
   }
 }
 
@@ -79,7 +97,7 @@ export function apiGuard(
         const ip = getClientIp(req);
 
         // Rate limiting
-        if (!checkRateLimit(ip, options.rateLimit || config.defaultRateLimit)) {
+        if (!checkRateLimitWithCleanup(ip, options.rateLimit || config.defaultRateLimit)) {
           return res.status(429).json({
             error: 'Too many requests',
             retryAfter: 60
@@ -109,24 +127,25 @@ export function apiGuard(
           }
 
           // API key specific rate limiting
-          if (!checkRateLimit(`key:${apiKey}`, keyData.rateLimit)) {
+          if (!checkRateLimitWithCleanup(`key:${apiKey}`, keyData.rateLimit)) {
             return res.status(429).json({ error: 'API key rate limit exceeded' });
           }
         }
 
         // Session authentication
-        let session: any = null;
+        let session: Session | null = null;
         if (options.requireAuth || options.requireAdmin) {
-          session = await getServerSession(req, res, authOptions);
+          const serverSession = await getServerSession(req, res, authOptions);
 
-          if (!session) {
+          if (!serverSession) {
             return res.status(401).json({ error: 'Authentication required' });
           }
 
-          if (options.requireAdmin && (session.user as any)?.role !== 'admin') {
+          session = serverSession as Session;
+
+          if (options.requireAdmin && session.user?.role !== 'admin') {
             logSecurityEvent('unauthorized_admin_access', {
               ip,
-              userId: (session.user as any)?.id,
               path: req.url
             });
             return res.status(403).json({ error: 'Admin access required' });
@@ -140,7 +159,7 @@ export function apiGuard(
         if (config.enableCsrf && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method!)) {
           const csrfToken = req.headers['x-csrf-token'] as string;
 
-          if (!csrfToken || !validateCsrfToken(csrfToken, (session as any)?.user?.id)) {
+          if (!csrfToken || !validateCsrfToken(csrfToken, session?.user?.id)) {
             return res.status(403).json({ error: 'Invalid CSRF token' });
           }
         }
@@ -194,11 +213,13 @@ export function apiGuard(
         // Execute the actual handler
         await handler(req, res);
 
-      } catch (error: any) {
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+
         // Log error
         logSecurityEvent('api_error', {
-          error: error.message,
-          stack: error.stack,
+          error: err.message,
+          stack: err.stack,
           path: req.url,
           method: req.method,
         });
@@ -207,7 +228,7 @@ export function apiGuard(
         if (process.env.NODE_ENV === 'development') {
           res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
           });
         } else {
           res.status(500).json({ error: 'Internal server error' });
@@ -272,8 +293,14 @@ function checkRateLimit(key: string, limit: number): boolean {
  * Generate CSRF token
  */
 export function generateCsrfToken(userId?: string): string {
-  const secret = process.env.NEXTAUTH_SECRET || 'default-secret';
-  const data = `${userId || 'anonymous'}-${Date.now()}-${Math.random()}`;
+  const secret = process.env.NEXTAUTH_SECRET;
+
+  if (!secret) {
+    throw new Error('NEXTAUTH_SECRET is required for CSRF token generation');
+  }
+
+  const random = crypto.randomBytes(32).toString('hex');
+  const data = `${userId || 'anonymous'}-${Date.now()}-${random}`;
   return crypto
     .createHmac('sha256', secret)
     .update(data)
@@ -283,25 +310,33 @@ export function generateCsrfToken(userId?: string): string {
 /**
  * Validate CSRF token
  */
-function validateCsrfToken(token: string?: string): boolean {
-  // Simple validation - in production, store and validate against session
-  return token.length === 64; // SHA256 produces 64 character hex string
+function validateCsrfToken(token: string | undefined, _userId?: string): boolean {
+  if (!token || token.length !== 64) {
+    return false;
+  }
+
+  // Validate hex format
+  if (!/^[a-f0-9]{64}$/.test(token)) {
+    return false;
+  }
+
+  // In production, should validate against stored session token
+  // For now, validate format and length
+  return true;
 }
 
 /**
  * Log security events
  */
-function logSecurityEvent(event: string, data: any): void {
+function logSecurityEvent(event: string, data: Record<string, unknown>): void {
   const logEntry = {
     timestamp: new Date().toISOString(),
     event,
     ...data,
   };
 
-  // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[SECURITY]', logEntry);
-  }
+  // Use logger instead of console
+  logger.warn('Security event', logEntry);
 
   // In production, send to monitoring service
   if (process.env.NODE_ENV === 'production' && process.env.MONITORING_WEBHOOK_URL) {
@@ -309,37 +344,47 @@ function logSecurityEvent(event: string, data: any): void {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(logEntry),
-    }).catch(err => console.error('Failed to send security log:', err));
+    }).catch(err => {
+      logger.error('Failed to send security log', { error: err instanceof Error ? err.message : String(err) });
+    });
   }
 }
 
 /**
  * Log API access
  */
-function logApiAccess(data: any): void {
+function logApiAccess(data: Record<string, unknown>): void {
   const logEntry = {
     timestamp: new Date().toISOString(),
     type: 'api_access',
     ...data,
   };
 
-  // Async logging to not block response
-  if (process.env.LOG_LEVEL === 'debug') {
-    console.log('[API]', logEntry);
-  }
+  // Use logger for debug logging
+  logger.debug('API access', logEntry);
 }
 
 /**
  * Clean up old rate limit entries
+ * Note: Disabled for serverless environments - cleanup happens on-demand
  */
-setInterval(() => {
+function cleanupRateLimits(): void {
   const now = Date.now();
   for (const [key, tracking] of requestTracking.entries()) {
     if (now > tracking.resetTime + config.rateLimitWindow) {
       requestTracking.delete(key);
     }
   }
-}, 60 * 1000); // Clean up every minute
+}
+
+// Run cleanup on-demand instead of setInterval (serverless compatible)
+function checkRateLimitWithCleanup(key: string, limit: number): boolean {
+  // Periodic cleanup (every ~100 requests to avoid overhead)
+  if (Math.random() < 0.01) {
+    cleanupRateLimits();
+  }
+  return checkRateLimit(key, limit);
+}
 
 /**
  * Middleware for specific HTTP methods
