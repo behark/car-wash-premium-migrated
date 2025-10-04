@@ -3,19 +3,34 @@
 # CORRECTED BUILD SETTINGS
 
 [build]
-  base    = "car-wash-booking" # <<< ADDED THIS LINE
-  command = "npm install && prisma generate && npm run build && cd netlify/functions && npm install && npx prisma generate" # <<< UPDATED THIS LINE
+  base    = "car-wash-booking"
+  command = "npm run validate:build && npm install && prisma generate && npm run build && cd netlify/functions && npm install && npx prisma generate"
   # 'publish' directory is now handled automatically by the Next.js plugin
+  # Build caching for improved performance
+  publish = ".next"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18"
   NPM_FLAGS = "--force"
-  NODE_OPTIONS = "--max-old-space-size=2048"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  # Enable build caching
+  NETLIFY_USE_YARN = "false"
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"
+  # Optimize build performance
+  NEXT_DISABLE_OPENCOLLECTIVE = "1"
 
 # Essential Next.js Plugin for SSR/ISR Support
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Build optimization plugins
+[[plugins]]
+  package = "netlify-plugin-cache-nextjs"
+
+# Checksum plugin for build caching
+[[plugins]]
+  package = "netlify-plugin-checksum-retry"
 
 # ==========================================
 # ENVIRONMENT CONFIGURATION
@@ -102,13 +117,30 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
   included_files = ["netlify/functions/**"]
+  # Optimize function performance
+  external_node_modules = ["@prisma/client", "prisma"]
+
+  # Default function timeout
+  timeout = 10
 
 # Function-specific configurations for better performance
 [functions."services-index"]
   schedule = "@daily"
+  timeout = 30
+  memory = 512
 
 [functions."bookings-availability"]
   schedule = "@hourly"
+  timeout = 30
+  memory = 512
+
+[functions."debug-health"]
+  timeout = 5
+  memory = 128
+
+[functions."payment-webhook"]
+  timeout = 30
+  memory = 256
 
 # ==========================================
 # REDIRECTS - API Routes to Functions
@@ -131,6 +163,12 @@
 [[redirects]]
   from = "/api/services"
   to = "/.netlify/functions/services-index"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/services-simple"
+  to = "/.netlify/functions/services-simple"
   status = 200
   force = true
 
