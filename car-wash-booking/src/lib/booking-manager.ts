@@ -14,8 +14,7 @@ import {
   endOfDay,
   addHours,
   differenceInHours,
-  isBefore,
-  isAfter
+  isBefore
 } from 'date-fns';
 import { EventEmitter } from 'events';
 

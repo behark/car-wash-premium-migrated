@@ -283,7 +283,7 @@ export function generateCsrfToken(userId?: string): string {
 /**
  * Validate CSRF token
  */
-function validateCsrfToken(token: string, userId?: string): boolean {
+function validateCsrfToken(token: string?: string): boolean {
   // Simple validation - in production, store and validate against session
   return token.length === 64; // SHA256 produces 64 character hex string
 }

@@ -292,17 +292,17 @@ function decrypt(encryptedData: string, key: string): string {
 /**
  * Store backup (implementation depends on storage type)
  */
-async function storeBackup(backupId: string, data: string): Promise<void> {
+async function storeBackup(backupId: string: string): Promise<void> {
   switch (config.storageType) {
     case 's3':
-      await storeToS3(backupId, data);
+      await storeToS3(backupId);
       break;
     case 'azure':
-      await storeToAzure(backupId, data);
+      await storeToAzure(backupId);
       break;
     case 'local':
     default:
-      await storeLocally(backupId, data);
+      await storeLocally(backupId);
       break;
   }
 }
@@ -310,7 +310,7 @@ async function storeBackup(backupId: string, data: string): Promise<void> {
 /**
  * Store backup locally (for development)
  */
-async function storeLocally(backupId: string, data: string): Promise<void> {
+async function storeLocally(backupId: string: string): Promise<void> {
   const fs = await import('fs').then(m => m.promises);
   const path = await import('path');
 
@@ -318,13 +318,13 @@ async function storeLocally(backupId: string, data: string): Promise<void> {
   await fs.mkdir(backupDir, { recursive: true });
 
   const backupPath = path.join(backupDir, `${backupId}.backup`);
-  await fs.writeFile(backupPath, data, 'utf8');
+  await fs.writeFile(backupPath, 'utf8');
 }
 
 /**
  * Store backup to S3
  */
-async function storeToS3(backupId: string, data: string): Promise<void> {
+async function storeToS3(backupId: string: string): Promise<void> {
   // AWS S3 implementation
   if (!config.s3Bucket) {
     throw new Error('S3 bucket not configured');
@@ -338,7 +338,7 @@ async function storeToS3(backupId: string, data: string): Promise<void> {
 /**
  * Store backup to Azure
  */
-async function storeToAzure(backupId: string, data: string): Promise<void> {
+async function storeToAzure(backupId: string: string): Promise<void> {
   // Azure Blob Storage implementation
   console.log(`Storing backup ${backupId} to Azure`);
   // Implementation would go here
