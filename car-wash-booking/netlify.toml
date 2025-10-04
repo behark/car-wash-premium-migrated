@@ -1,10 +1,11 @@
 # Netlify Production Configuration
 # Car Wash Booking System - kiiltoloisto.fi
-# Force deployment trigger - bcrypt fix
+# CORRECTED BUILD SETTINGS
 
 [build]
-  command = "npm run build"
-  publish = "."
+  base    = "car-wash-booking" # <<< ADDED THIS LINE
+  command = "npm install && prisma generate && npm run build" # <<< UPDATED THIS LINE
+  # 'publish' directory is now handled automatically by the Next.js plugin
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
@@ -104,10 +105,10 @@
 
 # Function-specific configurations for better performance
 [functions."services-index"]
-  schedule = "@daily"  # Warm up function daily
+  schedule = "@daily"
 
 [functions."bookings-availability"]
-  schedule = "@hourly"  # Keep warm for fast responses
+  schedule = "@hourly"
 
 # ==========================================
 # REDIRECTS - API Routes to Functions
