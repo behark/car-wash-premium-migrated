@@ -172,6 +172,20 @@
   status = 200
   force = true
 
+# Health endpoint
+[[redirects]]
+  from = "/api/debug-health"
+  to = "/.netlify/functions/debug-health"
+  status = 200
+  force = true
+
+# Health alias
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/debug-health"
+  status = 200
+  force = true
+
 # ==========================================
 # DEV SETTINGS
 # ==========================================
