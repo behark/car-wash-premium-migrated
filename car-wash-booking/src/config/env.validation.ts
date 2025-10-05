@@ -39,6 +39,12 @@ const envSchema = z.object({
   SLOW_QUERY_THRESHOLD: z.string().transform(Number).pipe(z.number().positive()).optional(),
   MAX_QUERY_HISTORY: z.string().transform(Number).pipe(z.number().positive()).optional(),
 
+  // Redis Configuration (optional)
+  REDIS_URL: z.string().url().optional(),
+  REDIS_KEY_PREFIX: z.string().optional(),
+  REDIS_DEFAULT_TTL: z.string().transform(Number).pipe(z.number().positive()).optional(),
+  REDIS_ENABLE_COMPRESSION: z.string().transform(v => v === 'true').optional(),
+
   // Optional services
   SENTRY_DSN: z.string().url().optional(),
   POSTHOG_API_KEY: z.string().optional(),
@@ -167,6 +173,8 @@ export function logEnvConfig() {
     SENDGRID_API_KEY: env.SENDGRID_API_KEY ? '✅ Set (redacted)' : '❌ Not set',
     SENDER_EMAIL: env.SENDER_EMAIL || '❌ Not set',
     NEXT_PUBLIC_SITE_URL: env.NEXT_PUBLIC_SITE_URL || '❌ Not set',
+    REDIS_URL: env.REDIS_URL ? '✅ Set (redacted)' : '⚠️ Not set (optional)',
+    REDIS_KEY_PREFIX: env.REDIS_KEY_PREFIX || '⚠️ Not set (optional)',
     SENTRY_DSN: env.SENTRY_DSN ? '✅ Set (redacted)' : '⚠️ Not set (optional)',
     POSTHOG_API_KEY: env.POSTHOG_API_KEY ? '✅ Set (redacted)' : '⚠️ Not set (optional)',
   };

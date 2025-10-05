@@ -1,10 +1,64 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+// Use edge-compatible utilities for middleware
+function generateCorrelationId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 10);
+  return `corr_${timestamp}_${random}`;
+}
 
-// Enhanced middleware with comprehensive security features
+function generateRequestId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 10);
+  return `req_${timestamp}_${random}`;
+}
+
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) {
+    return realIp;
+  }
+
+  const cloudflareIp = req.headers.get('cf-connecting-ip');
+  if (cloudflareIp) {
+    return cloudflareIp;
+  }
+
+  return req.ip || 'unknown';
+}
+
+function extractUserInfo(req: NextRequest): { userId?: string; sessionId?: string } {
+  try {
+    const userIdHeader = req.headers.get('x-user-id');
+    const sessionIdHeader = req.headers.get('x-session-id');
+
+    const cookieUserId = req.cookies.get('user-id')?.value;
+    const cookieSessionId = req.cookies.get('session-id')?.value ||
+                          req.cookies.get('next-auth.session-token')?.value;
+
+    return {
+      userId: userIdHeader || cookieUserId,
+      sessionId: sessionIdHeader || cookieSessionId,
+    };
+  } catch (error) {
+    console.debug('Failed to extract user info', error);
+    return {};
+  }
+}
+
+// Enhanced middleware with comprehensive security features and correlation tracking
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Generate correlation and request IDs
+  const correlationId = request.headers.get('x-correlation-id') || generateCorrelationId();
+  const requestId = request.headers.get('x-request-id') || generateRequestId();
 
   // Apply comprehensive security headers
   const response = NextResponse.next();
@@ -15,6 +69,17 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+
+  // Add correlation and request tracking headers
+  response.headers.set('X-Correlation-ID', correlationId);
+  response.headers.set('X-Request-ID', requestId);
+
+  // Log request for monitoring (Edge Runtime compatible)
+  const { userId } = extractUserInfo(request);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[${correlationId}] ${request.method} ${pathname}${userId ? ` (user: ${userId})` : ''}`);
+  }
 
   // Block dangerous paths and common attack vectors
   const CRITICAL_BLOCKED_PATHS = [

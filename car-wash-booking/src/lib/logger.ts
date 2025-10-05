@@ -1,58 +1,176 @@
-interface LogLevel {
-  ERROR: number;
-  WARN: number;
-  INFO: number;
-  DEBUG: number;
-}
+/**
+ * Enhanced Logger
+ * Wrapper around structured logger for backward compatibility and convenience
+ */
 
-const LOG_LEVELS: LogLevel = {
-  ERROR: 0,
-  WARN: 1,
-  INFO: 2,
-  DEBUG: 3
-};
+import { structuredLogger, type LogContext } from './logging/structured-logger';
 
+/**
+ * Enhanced logger with structured logging and correlation ID support
+ */
 class Logger {
-  private level: number;
+  private structuredLogger = structuredLogger;
 
-  constructor() {
-    const envLevel = process.env.LOG_LEVEL?.toUpperCase() || 'INFO';
-    this.level = LOG_LEVELS[envLevel as keyof LogLevel] ?? LOG_LEVELS.INFO;
+  /**
+   * Debug logging
+   */
+  debug(message: string, metadata?: Record<string, any>): void {
+    this.structuredLogger.debug(message, metadata);
   }
 
-  private shouldLog(level: number): boolean {
-    return level <= this.level;
+  /**
+   * Info logging
+   */
+  info(message: string, metadata?: Record<string, any>): void {
+    this.structuredLogger.info(message, metadata);
   }
 
-  private formatMessage(level: string, message: string, meta?: any): string {
-    const timestamp = new Date().toISOString();
-    const metaStr = meta ? ` | ${JSON.stringify(meta)}` : '';
-    return `[${timestamp}] ${level}: ${message}${metaStr}`;
+  /**
+   * Warning logging
+   */
+  warn(message: string, metadata?: Record<string, any>): void {
+    this.structuredLogger.warn(message, metadata);
   }
 
-  error(message: string, meta?: any): void {
-    if (this.shouldLog(LOG_LEVELS.ERROR)) {
-      console.error(this.formatMessage('ERROR', message, meta));
+  /**
+   * Error logging
+   */
+  error(message: string, error?: Error | any, metadata?: Record<string, any>): void {
+    if (error && typeof error === 'object' && !metadata) {
+      // If second parameter is metadata object (not Error)
+      if (!('message' in error) && !('stack' in error)) {
+        this.structuredLogger.error(message, undefined, error);
+        return;
+      }
     }
+
+    this.structuredLogger.error(message, error, metadata);
   }
 
-  warn(message: string, meta?: any): void {
-    if (this.shouldLog(LOG_LEVELS.WARN)) {
-      console.warn(this.formatMessage('WARN', message, meta));
-    }
+  /**
+   * Fatal logging
+   */
+  fatal(message: string, error?: Error | any, metadata?: Record<string, any>): void {
+    this.structuredLogger.fatal(message, error, metadata);
   }
 
-  info(message: string, meta?: any): void {
-    if (this.shouldLog(LOG_LEVELS.INFO)) {
-      console.info(this.formatMessage('INFO', message, meta));
-    }
+  /**
+   * Create child logger with context
+   */
+  child(context: Partial<LogContext>) {
+    return this.structuredLogger.child(context);
   }
 
-  debug(message: string, meta?: any): void {
-    if (this.shouldLog(LOG_LEVELS.DEBUG)) {
-      console.debug(this.formatMessage('DEBUG', message, meta));
-    }
+  /**
+   * Execute with correlation context
+   */
+  withContext<T>(context: LogContext, fn: () => T): T {
+    return this.structuredLogger.withContext(context, fn);
+  }
+
+  /**
+   * Set correlation ID
+   */
+  withCorrelationId(correlationId?: string) {
+    return this.structuredLogger.withCorrelationId(correlationId);
+  }
+
+  /**
+   * Set request ID
+   */
+  withRequestId(requestId?: string) {
+    return this.structuredLogger.withRequestId(requestId);
+  }
+
+  /**
+   * Set user context
+   */
+  withUser(userId: string, sessionId?: string) {
+    return this.structuredLogger.withUser(userId, sessionId);
+  }
+
+  /**
+   * Set operation context
+   */
+  withOperation(operation: string, component?: string) {
+    return this.structuredLogger.withOperation(operation, component);
+  }
+
+  /**
+   * Start performance measurement
+   */
+  startPerformance(operationId: string): void {
+    this.structuredLogger.startPerformance(operationId);
+  }
+
+  /**
+   * End performance measurement
+   */
+  endPerformance(operationId: string, message?: string, metadata?: Record<string, any>) {
+    return this.structuredLogger.endPerformance(operationId, message, metadata);
+  }
+
+  /**
+   * Measure async function performance
+   */
+  async measureAsync<T>(
+    operationId: string,
+    fn: () => Promise<T>,
+    metadata?: Record<string, any>
+  ): Promise<T> {
+    return this.structuredLogger.measureAsync(operationId, fn, metadata);
+  }
+
+  /**
+   * Measure sync function performance
+   */
+  measure<T>(
+    operationId: string,
+    fn: () => T,
+    metadata?: Record<string, any>
+  ): T {
+    return this.structuredLogger.measure(operationId, fn, metadata);
+  }
+
+  /**
+   * Create audit log
+   */
+  audit(action: string, resource: string, userId?: string, metadata?: Record<string, any>): void {
+    this.structuredLogger.audit(action, resource, userId, metadata);
+  }
+
+  /**
+   * Create security log
+   */
+  security(
+    event: string,
+    severity: 'low' | 'medium' | 'high' | 'critical',
+    metadata?: Record<string, any>
+  ): void {
+    this.structuredLogger.security(event, severity, metadata);
+  }
+
+  /**
+   * Flush logs immediately
+   */
+  async flush(): Promise<void> {
+    return this.structuredLogger.flush();
+  }
+
+  /**
+   * Get current context
+   */
+  getContext(): LogContext {
+    return this.structuredLogger.getContext();
+  }
+
+  /**
+   * Get underlying structured logger
+   */
+  getStructuredLogger() {
+    return this.structuredLogger;
   }
 }
 
+// Export singleton instance
 export const logger = new Logger();
