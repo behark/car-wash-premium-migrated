@@ -4,8 +4,8 @@
  */
 
 export interface ServiceWorkerConfig {
-  onSuccess?: (registration: ServiceWorkerRegistration) => void;
-  onUpdate?: (registration: ServiceWorkerRegistration) => void;
+  onSuccess?: (_registration: ServiceWorkerRegistration) => void;
+  onUpdate?: (_registration: ServiceWorkerRegistration) => void;
   onOffline?: () => void;
   onOnline?: () => void;
 }

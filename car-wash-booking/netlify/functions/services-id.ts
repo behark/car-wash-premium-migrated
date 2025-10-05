@@ -1,71 +1,63 @@
-import { Handler, HandlerEvent } from '@netlify/functions';
-import { PrismaClient } from '@prisma/client';
+/**
+ * Service Details Endpoint
+ * GET /api/services-id?id={serviceId}
+ *
+ * Retrieves details of a specific service by ID
+ */
 
-const prisma = new PrismaClient();
+import { z } from 'zod';
+import { withPrisma, withRetry } from './lib/prisma';
+import { createGetHandler } from './lib/request-handler';
+import { CommonErrors } from './lib/error-handler';
 
-const handler: Handler = async (event: HandlerEvent) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Content-Type': 'application/json',
-  };
+/**
+ * Query parameter schema for service retrieval
+ */
+const ServiceIdQuerySchema = z.object({
+  id: z.string()
+    .transform(val => parseInt(val, 10))
+    .refine(val => !isNaN(val) && val > 0, 'Invalid service ID'),
+});
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
+/**
+ * Main handler for service details
+ */
+export const handler = createGetHandler<z.infer<typeof ServiceIdQuerySchema>>(
+  {
+    validation: {
+      query: ServiceIdQuerySchema,
+    },
+  },
+  async ({ query }) => {
+    const serviceId = query!.id;
 
-  if (event.httpMethod !== 'GET') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
-  }
-
-  try {
-    const id = event.path.split('/').pop();
-    const serviceId = parseInt(id || '');
-
-    if (isNaN(serviceId)) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Invalid service ID' }),
-      };
-    }
-
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId },
-    });
+    // Fetch service using proper connection management
+    const service = await withRetry(async () =>
+      withPrisma(async (prisma) => {
+        return await prisma.service.findUnique({
+          where: { id: serviceId },
+        });
+      })
+    );
 
     if (!service) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Service not found' }),
-      };
+      throw CommonErrors.notFound('Service');
     }
 
+    // Format service for response
     return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        service,
-      }),
-    };
-  } catch (error: any) {
-    console.error('Get service error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Failed to get service',
-        message: error.message,
-      }),
+      id: service.id,
+      titleFi: service.titleFi,
+      titleEn: service.titleEn,
+      descriptionFi: service.descriptionFi,
+      descriptionEn: service.descriptionEn,
+      durationMinutes: service.durationMinutes,
+      priceCents: service.priceCents,
+      price: (service.priceCents / 100).toFixed(2),
+      // vehicleType: service.vehicleType, // This field doesn't exist in the Service model
+      isActive: service.isActive,
+      createdAt: service.createdAt.toISOString(),
+      updatedAt: service.updatedAt.toISOString(),
     };
   }
-};
-
-export { handler };
+);

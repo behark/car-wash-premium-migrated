@@ -2,12 +2,8 @@
  * Sentry Integration for Error Tracking and Performance Monitoring
  */
 
-// Temporarily disabled for build
-// import * as Sentry from '@sentry/nextjs';
-// import { CaptureContext } from '@sentry/types';
-
-const Sentry = {} as any;
-type CaptureContext = any;
+import * as Sentry from '@sentry/nextjs';
+import { CaptureContext } from '@sentry/types';
 
 // Initialize Sentry
 export function initSentry() {

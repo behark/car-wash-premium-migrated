@@ -13,7 +13,7 @@ interface GestureOptions {
   onSwipeDown?: () => void;
   onLongPress?: () => void;
   onDoubleTap?: () => void;
-  onPinch?: (scale: number) => void;
+  onPinch?: (_scale: number) => void;
   swipeThreshold?: number;
   longPressDelay?: number;
   doubleTapDelay?: number;

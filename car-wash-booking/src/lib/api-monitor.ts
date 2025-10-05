@@ -366,7 +366,11 @@ class CircuitBreaker {
   private readonly timeout = 60000; // 1 minute
   private readonly successThreshold = 3; // successes to close from half-open
 
-  constructor(private service: string) {}
+  private service: string;
+
+  constructor(service: string) {
+    this.service = service;
+  }
 
   recordSuccess() {
     if (this.state === 'half-open') {

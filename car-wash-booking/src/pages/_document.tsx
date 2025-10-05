@@ -5,17 +5,16 @@ export default function Document() {
   return (
     <Html lang="fi">
       <Head>
-        {/* Critical resource hints */}
+        {/* Google Fonts optimization */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
-        {/* Optimize font loading with font-display: swap */}
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
 
-        {/* Preload critical fonts */}
+        {/* Critical font preload */}
+        {/* eslint-disable-next-line @next/next/google-font-preconnect */}
         <link
           rel="preload"
           href="https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2"

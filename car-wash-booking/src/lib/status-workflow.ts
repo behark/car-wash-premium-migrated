@@ -13,7 +13,7 @@ export interface StatusTransition {
   label: string;
   requiresReason?: boolean;
   allowedBy: ('customer' | 'staff' | 'admin' | 'system')[];
-  conditions?: (booking: any) => boolean;
+  conditions?: (_booking: any) => boolean;
 }
 
 /**

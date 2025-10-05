@@ -72,7 +72,7 @@ export function apiGuard(
   } = {}
 ) {
   return async (
-    handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>
+    handler: (_req: NextApiRequest, _res: NextApiResponse) => Promise<void>
   ) => {
     return async (req: NextApiRequest, res: NextApiResponse) => {
       try {

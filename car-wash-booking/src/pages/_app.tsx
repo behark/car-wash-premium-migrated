@@ -9,6 +9,7 @@ import { register as registerSW } from '../lib/pwa/serviceWorker';
 import { initDB } from '../lib/pwa/offlineStorage';
 import OfflineIndicator from '../components/PWA/OfflineIndicator';
 import { initPerformanceOptimizations } from '../utils/performance';
+import { initializeMonitoring, trackPageView } from '../lib/monitoring-init';
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
@@ -17,6 +18,9 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const canonicalUrl = siteConfig.siteUrl + (canonicalPath || '/');
 
   useEffect(() => {
+    // Initialize monitoring systems (includes Web Vitals)
+    initializeMonitoring();
+
     // Initialize performance optimizations
     initPerformanceOptimizations();
 

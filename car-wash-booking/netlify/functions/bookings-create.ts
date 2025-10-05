@@ -1,27 +1,27 @@
-import { Handler, HandlerEvent } from '@netlify/functions';
-import { PrismaClient, BookingStatus, PaymentStatus } from '@prisma/client';
-import { z } from 'zod';
+/**
+ * Booking Creation Endpoint
+ * POST /api/bookings-create
+ *
+ * Creates a new booking for a car wash service
+ */
+
+import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { format, addMinutes } from 'date-fns';
 import sgMail from '@sendgrid/mail';
+import { withPrisma, withRetry } from './lib/prisma';
+import { createPostHandler } from './lib/request-handler';
+import { BookingCreateSchema, BookingCreateInput } from './lib/validation';
+import { CommonErrors, ApiError, HttpStatus } from './lib/error-handler';
 
-const prisma = new PrismaClient();
-
+// Configure SendGrid if available
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-const bookingSchema = z.object({
-  serviceId: z.number(),
-  vehicleType: z.string(),
-  date: z.string().transform(str => new Date(str)),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/),
-  customerName: z.string().min(2),
-  customerEmail: z.string().email(),
-  customerPhone: z.string().min(8),
-  licensePlate: z.string().optional(),
-  notes: z.string().optional(),
-});
-
+/**
+ * Generates a unique confirmation code
+ * @returns 8-character alphanumeric code
+ */
 function generateConfirmationCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
@@ -31,6 +31,11 @@ function generateConfirmationCode(): string {
   return code;
 }
 
+/**
+ * Creates email template for booking confirmation
+ * @param booking - The booking details
+ * @returns Email subject and content
+ */
 function bookingConfirmationTemplate(booking: any) {
   const formattedDate = format(booking.date, 'dd.MM.yyyy');
 
@@ -43,7 +48,7 @@ Kiitos varauksestasi! Tässä varauksen tiedot:
 
 Palvelu: ${booking.service.titleFi}
 Päivämäärä: ${formattedDate}
-Kellonaika: ${booking.startTime}
+Kellonaika: ${booking.startTime} - ${booking.endTime}
 Vahvistuskoodi: ${booking.confirmationCode}
 
 Hinta: ${(booking.priceCents / 100).toFixed(2)}€
@@ -52,177 +57,229 @@ Ystävällisin terveisin,
 Kiilto & Loisto
     `,
     html: `
-<h2>Varausvahvistus</h2>
-<p>Hei ${booking.customerName},</p>
-<p>Kiitos varauksestasi!</p>
-<h3>Varauksen tiedot:</h3>
-<ul>
-  <li><strong>Palvelu:</strong> ${booking.service.titleFi}</li>
-  <li><strong>Päivämäärä:</strong> ${formattedDate}</li>
-  <li><strong>Kellonaika:</strong> ${booking.startTime}</li>
-  <li><strong>Vahvistuskoodi:</strong> ${booking.confirmationCode}</li>
-</ul>
-<p><strong>Hinta:</strong> ${(booking.priceCents / 100).toFixed(2)}€</p>
-<p>Ystävällisin terveisin,<br>Kiilto & Loisto</p>
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+    .details { background-color: #ffffff; border: 1px solid #dee2e6; padding: 20px; border-radius: 5px; }
+    .confirmation-code { font-size: 24px; font-weight: bold; color: #007bff; margin: 10px 0; }
+    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Varausvahvistus</h2>
+      <p>Hei ${booking.customerName},</p>
+      <p>Kiitos varauksestasi!</p>
+    </div>
+
+    <div class="details">
+      <h3>Varauksen tiedot:</h3>
+      <ul>
+        <li><strong>Palvelu:</strong> ${booking.service.titleFi}</li>
+        <li><strong>Päivämäärä:</strong> ${formattedDate}</li>
+        <li><strong>Kellonaika:</strong> ${booking.startTime} - ${booking.endTime}</li>
+        <li><strong>Vahvistuskoodi:</strong> <span class="confirmation-code">${booking.confirmationCode}</span></li>
+      </ul>
+      <p><strong>Hinta:</strong> ${(booking.priceCents / 100).toFixed(2)}€</p>
+    </div>
+
+    <div class="footer">
+      <p>Ystävällisin terveisin,<br>Kiilto & Loisto</p>
+    </div>
+  </div>
+</body>
+</html>
     `,
   };
 }
 
-const handler: Handler = async (event: HandlerEvent) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+/**
+ * Sends confirmation email to customer
+ * @param booking - The booking details
+ */
+async function sendConfirmationEmail(booking: any): Promise<void> {
+  if (!process.env.SENDGRID_API_KEY || !process.env.SENDER_EMAIL) {
+    console.log('Email sending not configured, skipping confirmation email');
+    return;
   }
 
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
-  }
+  const emailTemplate = bookingConfirmationTemplate(booking);
 
   try {
-    const validatedData = bookingSchema.parse(JSON.parse(event.body || '{}'));
-
-    const service = await prisma.service.findUnique({
-      where: { id: validatedData.serviceId },
+    await sgMail.send({
+      to: booking.customerEmail,
+      from: process.env.SENDER_EMAIL,
+      subject: emailTemplate.subject,
+      text: emailTemplate.text,
+      html: emailTemplate.html,
     });
+    console.log(`Confirmation email sent to ${booking.customerEmail}`);
+  } catch (error) {
+    console.error('Failed to send confirmation email:', error);
+    // Don't throw - email failure shouldn't fail the booking
+  }
+}
 
-    if (!service) {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ error: 'Service not found' }),
-      };
-    }
+/**
+ * Main handler for booking creation
+ */
+export const handler = createPostHandler<BookingCreateInput>(
+  {
+    validation: {
+      body: BookingCreateSchema,
+    },
+  },
+  async ({ body }) => {
+    const validatedData = body!;
 
-    const startDateTime = new Date(validatedData.date);
-    const [hours, minutes] = validatedData.startTime.split(':').map(Number);
-    startDateTime.setHours(hours, minutes, 0, 0);
-
-    const endDateTime = addMinutes(startDateTime, service.durationMinutes);
-
-    // Check for overlapping bookings
-    const overlappingBooking = await prisma.booking.findFirst({
-      where: {
-        date: validatedData.date,
-        status: {
-          notIn: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
-        },
-        OR: [
-          {
-            AND: [
-              { startTime: { lte: format(startDateTime, 'HH:mm') } },
-              { endTime: { gt: format(startDateTime, 'HH:mm') } },
-            ],
-          },
-          {
-            AND: [
-              { startTime: { lt: format(endDateTime, 'HH:mm') } },
-              { endTime: { gte: format(endDateTime, 'HH:mm') } },
-            ],
-          },
-        ],
-      },
-    });
-
-    if (overlappingBooking) {
-      return {
-        statusCode: 409,
-        headers,
-        body: JSON.stringify({ error: 'Time slot is not available' }),
-      };
-    }
-
-    const confirmationCode = generateConfirmationCode();
-
-    const booking = await prisma.booking.create({
-      data: {
-        serviceId: validatedData.serviceId,
-        vehicleType: validatedData.vehicleType,
-        date: validatedData.date,
-        startTime: format(startDateTime, 'HH:mm'),
-        endTime: format(endDateTime, 'HH:mm'),
-        duration: service.durationMinutes,
-        priceCents: service.priceCents,
-        status: BookingStatus.PENDING,
-        customerName: validatedData.customerName,
-        customerEmail: validatedData.customerEmail,
-        customerPhone: validatedData.customerPhone,
-        licensePlate: validatedData.licensePlate,
-        notes: validatedData.notes,
-        paymentStatus: PaymentStatus.PENDING,
-        confirmationCode,
-      },
-      include: {
-        service: true,
-      },
-    });
-
-    // Send confirmation email
-    if (process.env.SENDGRID_API_KEY && process.env.SENDER_EMAIL) {
-      const emailTemplate = bookingConfirmationTemplate(booking);
-
-      try {
-        await sgMail.send({
-          to: booking.customerEmail,
-          from: process.env.SENDER_EMAIL,
-          subject: emailTemplate.subject,
-          text: emailTemplate.text,
-          html: emailTemplate.html,
+    // Create booking using proper connection management
+    const booking = await withRetry(async () =>
+      withPrisma(async (prisma) => {
+        // Fetch service details
+        const service = await prisma.service.findUnique({
+          where: { id: validatedData.serviceId },
         });
-      } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError);
-      }
-    }
 
+        if (!service) {
+          throw CommonErrors.notFound('Service');
+        }
+
+        if (!service.isActive) {
+          throw new ApiError(
+            'SERVICE_INACTIVE',
+            'This service is currently not available',
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
+        // Calculate start and end times
+        const startDateTime = new Date(validatedData.date);
+        const [hours, minutes] = validatedData.startTime.split(':').map(Number);
+        startDateTime.setHours(hours, minutes, 0, 0);
+
+        const endDateTime = addMinutes(startDateTime, service.durationMinutes);
+
+        // Create booking in a transaction to ensure consistency
+        return await prisma.$transaction(async (tx: any) => {
+          // Check for overlapping bookings
+          const overlappingBooking = await tx.booking.findFirst({
+            where: {
+              date: validatedData.date,
+              status: {
+                notIn: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
+              },
+              OR: [
+                {
+                  AND: [
+                    { startTime: { lte: format(startDateTime, 'HH:mm') } },
+                    { endTime: { gt: format(startDateTime, 'HH:mm') } },
+                  ],
+                },
+                {
+                  AND: [
+                    { startTime: { lt: format(endDateTime, 'HH:mm') } },
+                    { endTime: { gte: format(endDateTime, 'HH:mm') } },
+                  ],
+                },
+                {
+                  AND: [
+                    { startTime: { gte: format(startDateTime, 'HH:mm') } },
+                    { endTime: { lte: format(endDateTime, 'HH:mm') } },
+                  ],
+                },
+              ],
+            },
+          });
+
+          if (overlappingBooking) {
+            throw new ApiError(
+              'TIME_SLOT_UNAVAILABLE',
+              'The selected time slot is not available',
+              HttpStatus.CONFLICT
+            );
+          }
+
+          // Generate unique confirmation code
+          let confirmationCode: string;
+          let codeExists = true;
+          let attempts = 0;
+
+          while (codeExists && attempts < 10) {
+            confirmationCode = generateConfirmationCode();
+            const existing = await tx.booking.findUnique({
+              where: { confirmationCode },
+            });
+            codeExists = !!existing;
+            attempts++;
+          }
+
+          if (attempts >= 10) {
+            throw new ApiError(
+              'CONFIRMATION_CODE_GENERATION_FAILED',
+              'Failed to generate unique confirmation code',
+              HttpStatus.INTERNAL_SERVER_ERROR
+            );
+          }
+
+          // Create the booking
+          const newBooking = await tx.booking.create({
+            data: {
+              serviceId: validatedData.serviceId,
+              vehicleType: validatedData.vehicleType,
+              date: validatedData.date,
+              startTime: format(startDateTime, 'HH:mm'),
+              endTime: format(endDateTime, 'HH:mm'),
+              duration: service.durationMinutes,
+              priceCents: service.priceCents,
+              status: BookingStatus.PENDING,
+              customerName: validatedData.customerName,
+              customerEmail: validatedData.customerEmail,
+              customerPhone: validatedData.customerPhone,
+              licensePlate: validatedData.licensePlate || null,
+              notes: validatedData.notes || null,
+              paymentStatus: PaymentStatus.PENDING,
+              confirmationCode: confirmationCode!,
+            },
+            include: {
+              service: true,
+            },
+          });
+
+          return newBooking;
+        });
+      })
+    );
+
+    // Send confirmation email (non-blocking)
+    sendConfirmationEmail(booking).catch(console.error);
+
+    // Return formatted response
     return {
-      statusCode: 201,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        booking: {
-          id: booking.id,
-          confirmationCode: booking.confirmationCode,
-          service: booking.service,
-          date: booking.date,
-          startTime: booking.startTime,
-          endTime: booking.endTime,
-          customerName: booking.customerName,
-          status: booking.status,
-        },
-      }),
-    };
-  } catch (error: any) {
-    console.error('Booking creation error:', error);
-
-    if (error.name === 'ZodError') {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({
-          error: 'Invalid input data',
-          details: error.errors,
-        }),
-      };
-    }
-
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({
-        error: 'Failed to create booking',
-        message: error.message,
-      }),
+      id: booking.id,
+      confirmationCode: booking.confirmationCode,
+      service: {
+        id: booking.service.id,
+        titleFi: booking.service.titleFi,
+        titleEn: booking.service.titleEn,
+        descriptionFi: booking.service.descriptionFi,
+        descriptionEn: booking.service.descriptionEn,
+      },
+      vehicleType: booking.vehicleType,
+      date: format(booking.date, 'yyyy-MM-dd'),
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      duration: booking.duration,
+      customerName: booking.customerName,
+      customerEmail: booking.customerEmail,
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      price: (booking.priceCents / 100).toFixed(2),
+      createdAt: booking.createdAt.toISOString(),
     };
   }
-};
-
-export { handler };
+);

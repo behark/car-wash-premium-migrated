@@ -73,7 +73,7 @@ export async function createBackup(
     }
 
     // Store backup
-    await storeBackup(backupId);
+    await storeBackup(backupId, finalBackup);
 
     // Create metadata
     const metadata: BackupMetadata = {
@@ -292,17 +292,17 @@ function decrypt(encryptedData: string, key: string): string {
 /**
  * Store backup (implementation depends on storage type)
  */
-async function storeBackup(backupId: string): Promise<void> {
+async function storeBackup(backupId: string, backupData: string): Promise<void> {
   switch (config.storageType) {
     case 's3':
-      await storeToS3(backupId);
+      await storeToS3(backupId, backupData);
       break;
     case 'azure':
-      await storeToAzure(backupId);
+      await storeToAzure(backupId, backupData);
       break;
     case 'local':
     default:
-      await storeLocally(backupId);
+      await storeLocally(backupId, backupData);
       break;
   }
 }
@@ -310,7 +310,7 @@ async function storeBackup(backupId: string): Promise<void> {
 /**
  * Store backup locally (for development)
  */
-async function storeLocally(backupId: string): Promise<void> {
+async function storeLocally(backupId: string, backupData: string): Promise<void> {
   const fs = await import('fs').then(m => m.promises);
   const path = await import('path');
 
@@ -318,29 +318,29 @@ async function storeLocally(backupId: string): Promise<void> {
   await fs.mkdir(backupDir, { recursive: true });
 
   const backupPath = path.join(backupDir, `${backupId}.backup`);
-  await fs.writeFile(backupPath, `Backup: ${backupId}`, 'utf8');
+  await fs.writeFile(backupPath, backupData, 'utf8');
 }
 
 /**
  * Store backup to S3
  */
-async function storeToS3(backupId: string): Promise<void> {
+async function storeToS3(backupId: string, backupData: string): Promise<void> {
   // AWS S3 implementation
   if (!config.s3Bucket) {
     throw new Error('S3 bucket not configured');
   }
 
-  // This would use AWS SDK
-  console.log(`Storing backup ${backupId} to S3 bucket ${config.s3Bucket}`);
+  // This would use AWS SDK to store backupData
+  console.log(`Storing backup ${backupId} (${backupData.length} chars) to S3 bucket ${config.s3Bucket}`);
   // Implementation would go here
 }
 
 /**
  * Store backup to Azure
  */
-async function storeToAzure(backupId: string): Promise<void> {
+async function storeToAzure(backupId: string, backupData: string): Promise<void> {
   // Azure Blob Storage implementation
-  console.log(`Storing backup ${backupId} to Azure`);
+  console.log(`Storing backup ${backupId} (${backupData.length} chars) to Azure`);
   // Implementation would go here
 }
 

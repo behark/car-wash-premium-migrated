@@ -103,8 +103,8 @@ export function getCurrentLocation(
  * Watch user location changes
  */
 export function watchLocation(
-  callback: (location: LocationCoordinates) => void,
-  errorCallback?: (error: LocationError) => void,
+  callback: (_location: LocationCoordinates) => void,
+  errorCallback?: (_error: LocationError) => void,
   options: {
     enableHighAccuracy?: boolean;
     timeout?: number;
