@@ -2,12 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma-simple';
 import { BookingStatus } from '@prisma/client';
 import { z } from 'zod';
-import { bookingCancellationTemplate } from '../../../lib/email-templates';
-import sgMail from '@sendgrid/mail';
-
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
 
 const updateSchema = z.object({
   status: z.nativeEnum(BookingStatus).optional(),
@@ -65,13 +59,17 @@ export default async function handler(
         return res.status(400).json({ error: 'Invalid booking ID' });
       }
 
+      const updateData: any = {};
+      if (validatedData.status) {
+        updateData.status = validatedData.status;
+      }
+      if (validatedData.adminNotes !== undefined) {
+        updateData.adminNotes = validatedData.adminNotes;
+      }
+
       const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
-        data: {
-          status: validatedData.status,
-          // adminNotes field might not exist in schema, so commenting out
-          // adminNotes: validatedData.adminNotes,
-        },
+        data: updateData,
         include: { service: true },
       });
 

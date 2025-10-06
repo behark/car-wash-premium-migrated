@@ -7,7 +7,7 @@ import SEO from '../../components/SEO';
 import { siteConfig } from '../../lib/siteConfig';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
-import { getBookingByConfirmationCode, BookingData } from '../../lib/booking-storage';
+// Use database API instead of localStorage
 
 interface BookingDetails {
   id: number;
@@ -33,43 +33,65 @@ export default function BookingConfirmation() {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [error, setError] = useState('');
 
+  // Payment verification temporarily disabled to reduce complexity
   const verifyPaymentAndGetBooking = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/payment/verify?sessionId=${session_id}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setBookingDetails(data.booking);
-      } else {
-        setError('Maksun vahvistus epäonnistui');
-      }
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      setError('Virhe maksun vahvistuksessa');
-    } finally {
-      setLoading(false);
-    }
+    setError('Maksun vahvistus ei ole vielä käytössä. Ota yhteyttä puhelimitse.');
+    setLoading(false);
   }, [session_id]);
 
   const getBookingDetails = useCallback(async () => {
     try {
-      const response = await fetch(`/api/bookings/${confirmationCode}`);
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(`/api/bookings/${confirmationCode}`, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Varausta ei löytynyt tällä vahvistuskoodilla. Tarkista koodi tai ota yhteyttä.');
+        } else if (response.status >= 500) {
+          setError('Palvelinvirhe. Yritä hetken kuluttua uudelleen tai ota yhteyttä puhelimitse.');
+        } else {
+          setError('Virhe varauksen hakemisessa');
+        }
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.booking) {
         setBookingDetails(data.booking);
       } else {
         setError('Varauksen tietoja ei löytynyt');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Get booking error:', error);
-      setError('Virhe varauksen hakemisessa');
+      if (error.name === 'AbortError') {
+        setError('Pyyntö aikakatkaistiin. Tarkista verkkoyhteytesi ja yritä uudelleen.');
+      } else {
+        setError('Virhe varauksen hakemisessa. Ota yhteyttä puhelimitse.');
+      }
     } finally {
       setLoading(false);
     }
   }, [confirmationCode]);
 
   useEffect(() => {
+    if (!confirmationCode) {
+      setError('Vahvistuskoodi puuttuu URL:sta');
+      setLoading(false);
+      return;
+    }
+
     if (session_id && confirmationCode) {
       verifyPaymentAndGetBooking();
     } else if (confirmationCode) {
@@ -117,11 +139,16 @@ export default function BookingConfirmation() {
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">Virhe varauksessa</h1>
-              <p className="text-slate-600 mb-6">{error}</p>
-              <Link href="/booking">
-                <a className="inline-flex items-center justify-center px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors">
-                  Palaa varaukseen
-                </a>
+              <p className="text-slate-600 mb-4">{error}</p>
+              <p className="text-sm text-slate-500 mb-6">
+                Jos olet juuri tehnyt varauksen, varauksesi on todennäköisesti tallennettu onnistuneesti.
+                Ota yhteyttä puhelimitse vahvistusta varten.
+              </p>
+              <Link
+                href="/booking"
+                className="inline-flex items-center justify-center px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Palaa varaukseen
               </Link>
             </div>
           ) : bookingDetails ? (
