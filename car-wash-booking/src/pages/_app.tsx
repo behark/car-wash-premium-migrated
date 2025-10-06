@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { siteConfig } from '../lib/siteConfig';
 import { register as registerSW } from '../lib/pwa/serviceWorker';
 import { initDB } from '../lib/pwa/offlineStorage';
-import OfflineIndicator from '../components/PWA/OfflineIndicator';
+// OfflineIndicator removed to fix dependencies
 import { initPerformanceOptimizations } from '../utils/performance';
 import { initializeAnalytics, trackPageView } from '../lib/analytics';
 
@@ -89,7 +89,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       </Head>
 
       {/* PWA Components */}
-      <OfflineIndicator />
+      {/* OfflineIndicator removed for memory optimization */}
 
 
       {/* SW Update Banner */}
