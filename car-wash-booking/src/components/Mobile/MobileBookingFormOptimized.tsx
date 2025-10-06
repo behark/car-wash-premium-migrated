@@ -277,7 +277,7 @@ export default function MobileBookingFormOptimized() {
       }
 
       // Redirect to success page with booking confirmation
-      window.location.href = `/booking/confirmation?code=${bookingData.data.booking.confirmationCode}`;
+      window.location.href = `/booking/confirmation?booking=${bookingData.data.booking.confirmationCode}`;
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
