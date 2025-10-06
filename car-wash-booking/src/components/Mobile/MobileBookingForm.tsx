@@ -169,32 +169,13 @@ export default function MobileBookingForm() {
         throw new Error(bookingData.error || 'Varauksen tekeminen epäonnistui');
       }
 
-      // Create payment session
-      const paymentResponse = await fetch('/api/payment/create-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bookingId: bookingData.booking.id,
-        }),
-      });
-
-      const paymentData = await paymentResponse.json();
-
-      if (!paymentResponse.ok) {
-        throw new Error(paymentData.error || 'Maksusession luominen epäonnistui');
-      }
-
       // Haptic feedback
       if ('vibrate' in navigator) {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Redirect to payment
-      if (paymentData.url) {
-        window.location.href = paymentData.url;
-      }
+      // Redirect to success page with booking confirmation
+      window.location.href = `/booking/confirmation?code=${bookingData.data.booking.confirmationCode}`;
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
