@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma-simple';
 import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { format, addMinutes } from 'date-fns';
+import { sendWhatsApp, generateBookingConfirmationWhatsApp, generateAdminNotificationWhatsApp } from '../../../lib/whatsapp';
+import { sendSMS, generateBookingConfirmationSMS } from '../../../lib/sms';
 
 // Simple confirmation code generator
 function generateConfirmationCode(): string {
@@ -113,6 +115,58 @@ export default async function handler(
         service: true,
       },
     });
+
+    // Send notifications (non-blocking)
+    const dateString = format(new Date(date), 'dd.MM.yyyy');
+    const timeString = startTime;
+    const priceString = `${(service.priceCents / 100).toFixed(0)}€`;
+
+    // Send WhatsApp notification to customer
+    if (customerPhone) {
+      const whatsappMessage = generateBookingConfirmationWhatsApp(
+        customerName,
+        confirmationCode,
+        service.titleFi,
+        dateString,
+        timeString,
+        priceString
+      );
+
+      sendWhatsApp(customerPhone, whatsappMessage).catch(error => {
+        console.log('WhatsApp notification failed (non-critical):', error);
+      });
+    }
+
+    // Send SMS as fallback
+    if (customerPhone) {
+      const smsMessage = generateBookingConfirmationSMS(
+        customerName,
+        booking.id,
+        service.titleFi,
+        dateString,
+        timeString
+      );
+
+      sendSMS(customerPhone, smsMessage).catch(error => {
+        console.log('SMS notification failed (non-critical):', error);
+      });
+    }
+
+    // Send admin notification if admin phone is configured
+    const adminPhone = process.env.ADMIN_PHONE;
+    if (adminPhone) {
+      const adminMessage = generateAdminNotificationWhatsApp(
+        customerName,
+        service.titleFi,
+        dateString,
+        timeString,
+        confirmationCode
+      );
+
+      sendWhatsApp(adminPhone, adminMessage).catch(error => {
+        console.log('Admin WhatsApp notification failed (non-critical):', error);
+      });
+    }
 
     res.status(201).json({
       success: true,
