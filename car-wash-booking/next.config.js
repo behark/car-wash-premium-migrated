@@ -85,8 +85,9 @@ const nextConfig = {
   },
 
   // Performance optimizations
+  // Reduce memory usage for Render deployment
   experimental: {
-    optimizePackageImports: ['framer-motion', 'swiper', 'date-fns', '@prisma/client'],
+    optimizePackageImports: ['date-fns'],
   },
 
   // Optimize webpack configuration
