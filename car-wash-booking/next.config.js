@@ -156,13 +156,11 @@ const nextConfig = {
   },
   // experimental.optimizeCss removed in Next.js 15
   async headers() {
-    // Generate a nonce for inline scripts (should be generated per request in production)
-    const isDev = process.env.NODE_ENV === 'development';
-
+    // Simplified CSP for Render deployment - no nonces needed
     const csp = [
       "default-src 'self'",
-      `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : "'strict-dynamic' 'nonce-{nonce}'"} blob: https://js.stripe.com`,
-      `style-src 'self' ${isDev ? "'unsafe-inline'" : "'nonce-{nonce}'"} https://fonts.googleapis.com`,
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://images.pexels.com https://kiiltoloisto.fi",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' https://api.stripe.com wss://* ws://localhost:*",
