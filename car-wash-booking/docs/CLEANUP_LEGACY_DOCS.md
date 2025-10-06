@@ -1,0 +1,153 @@
+# Legacy Documentation Cleanup
+
+The project now has consolidated documentation in the `/docs` folder. The following legacy files can be safely removed:
+
+## Files to Remove
+
+### Deployment Documentation (Consolidated into docs/DEPLOYMENT.md)
+- AUTO_DEPLOYMENT_SUMMARY.md
+- CLEAR_CACHE_DEPLOY.md
+- COMPREHENSIVE_DEPLOYMENT_VERIFICATION_REPORT.md
+- DEPLOYMENT_COMPLETE.md
+- DEPLOYMENT_GUIDE.md
+- DEPLOYMENT_ORDER.md
+- DEPLOYMENT_REPORT.md
+- DEPLOYMENT_STATUS_AND_NEXT_STEPS.md
+- NETLIFY_CONFIG_VERIFICATION.md
+- NETLIFY_DEPLOYMENT.md
+- NETLIFY_DEPLOYMENT_STATUS.md
+- NETLIFY_DEPLOYMENT_CHECKLIST.md
+- NETLIFY_BUILD_SETTINGS.txt
+- NETLIFY_ENV_VARIABLES.txt
+- NETLIFY_ENV_VARS.md
+- netlify-env-update.md
+- QUICK_START_NETLIFY.md
+
+### Database Documentation (Consolidated into docs/ARCHITECTURE.md)
+- DATABASE_ARCHITECTURE.md
+- DATABASE_ARCHITECTURE_REPORT.md
+- DATABASE_SCALABILITY_CONFIG.md
+- BACKUP_STRATEGY.md
+
+### Security and Monitoring (Consolidated into docs/ARCHITECTURE.md)
+- FINAL_SECURITY_AUDIT_REPORT.md
+- SECURITY_AUDIT_403_RESOLUTION.md
+- SECURITY_BREACH_RESPONSE.md
+- SECURITY.md
+- MONITORING_SYSTEM_REPORT.md
+- PERFORMANCE_REPORT.md
+- PERFORMANCE_VERIFICATION_REPORT.md
+
+### API Documentation (Moved to docs/DEVELOPMENT.md)
+- API_GUARD_ISSUES.md
+- API_INTEGRATION_SETUP_GUIDE.md
+- API_INTEGRATION_VERIFICATION_REPORT.md
+
+### Environment and Configuration (Streamlined)
+- HOW_TO_IMPORT_ENV.md
+- MINIMUM_ENV_VARIABLES.md
+- DISABLE_SECRETS_SCANNER.md
+
+### Legacy Setup Files
+- BEFORE_AFTER_COMPARISON.md
+- BOOKING_SYSTEM_VERIFICATION.md
+- CRITICAL_403_FIX_SOLUTION.md
+- FINAL_FIX_INSTRUCTIONS.md
+- FIX_403_ERROR.md
+- FIX_BASE_DIRECTORY.md
+- FIX_NETLIFY_403_COMPLETE.md
+- IMMEDIATE_403_FIX_STEPS.md
+
+### Integration Documentation (Moved to docs/OPTIONAL_SERVICES.md)
+- SENDGRID_EXPLANATION.md
+- TASTYIGNITER_INTEGRATION_COMPLETE.md
+- TESTING_INSTRUCTIONS.md
+
+### Production Setup (Consolidated)
+- PRODUCTION_DEPLOYMENT.md
+- PRODUCTION_SETUP.md
+- SEED_PRODUCTION_DATABASE.md
+
+### Miscellaneous
+- PROJECT_STATUS.md (Outdated)
+- HOW_GITHUB_TOKEN_WORKS.md (Tool-specific)
+
+## Cleanup Command
+
+To remove all legacy documentation files:
+
+```bash
+# Navigate to project root
+cd car-wash-booking
+
+# Remove legacy documentation files
+rm -f \
+  API_GUARD_ISSUES.md \
+  API_INTEGRATION_SETUP_GUIDE.md \
+  API_INTEGRATION_VERIFICATION_REPORT.md \
+  AUTO_DEPLOYMENT_SUMMARY.md \
+  BACKUP_STRATEGY.md \
+  BEFORE_AFTER_COMPARISON.md \
+  BOOKING_SYSTEM_VERIFICATION.md \
+  CLEAR_CACHE_DEPLOY.md \
+  COMPREHENSIVE_DEPLOYMENT_VERIFICATION_REPORT.md \
+  CRITICAL_403_FIX_SOLUTION.md \
+  DATABASE_ARCHITECTURE.md \
+  DATABASE_ARCHITECTURE_REPORT.md \
+  DATABASE_SCALABILITY_CONFIG.md \
+  DEPLOYMENT_COMPLETE.md \
+  DEPLOYMENT_GUIDE.md \
+  DEPLOYMENT_ORDER.md \
+  DEPLOYMENT_REPORT.md \
+  DEPLOYMENT_STATUS_AND_NEXT_STEPS.md \
+  DISABLE_SECRETS_SCANNER.md \
+  FINAL_FIX_INSTRUCTIONS.md \
+  FINAL_SECURITY_AUDIT_REPORT.md \
+  FIX_403_ERROR.md \
+  FIX_BASE_DIRECTORY.md \
+  FIX_NETLIFY_403_COMPLETE.md \
+  HOW_GITHUB_TOKEN_WORKS.md \
+  HOW_TO_IMPORT_ENV.md \
+  IMMEDIATE_403_FIX_STEPS.md \
+  MINIMUM_ENV_VARIABLES.md \
+  MONITORING_SYSTEM_REPORT.md \
+  NETLIFY_BUILD_SETTINGS.txt \
+  NETLIFY_CONFIG_VERIFICATION.md \
+  NETLIFY_DEPLOYMENT.md \
+  NETLIFY_DEPLOYMENT_CHECKLIST.md \
+  NETLIFY_DEPLOYMENT_STATUS.md \
+  NETLIFY_ENV_VARIABLES.txt \
+  NETLIFY_ENV_VARS.md \
+  netlify-env-update.md \
+  PERFORMANCE_REPORT.md \
+  PERFORMANCE_VERIFICATION_REPORT.md \
+  PRODUCTION_DEPLOYMENT.md \
+  PRODUCTION_SETUP.md \
+  PROJECT_STATUS.md \
+  QUICK_START_NETLIFY.md \
+  SECURITY_AUDIT_403_RESOLUTION.md \
+  SECURITY_BREACH_RESPONSE.md \
+  SECURITY.md \
+  SEED_PRODUCTION_DATABASE.md \
+  SENDGRID_EXPLANATION.md \
+  TASTYIGNITER_INTEGRATION_COMPLETE.md \
+  TESTING_INSTRUCTIONS.md
+
+echo "Legacy documentation files removed. New docs available in /docs folder."
+```
+
+## New Documentation Structure
+
+After cleanup, your documentation will be organized as:
+
+```
+docs/
+├── README.md              # Main project overview
+├── DEVELOPMENT.md         # Development setup and commands
+├── DEPLOYMENT.md          # Production deployment guide
+├── ARCHITECTURE.md        # Technical architecture details
+├── OPTIONAL_SERVICES.md   # External service integrations
+└── CLEANUP_LEGACY_DOCS.md # This cleanup guide
+```
+
+This provides comprehensive documentation without the clutter of 50+ markdown files.

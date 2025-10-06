@@ -56,8 +56,18 @@ export default async function handler(
   } else if (req.method === 'PATCH') {
     const session = await getServerSession(req, res, authOptions);
 
-    if (!session || (session.user as any)?.role !== 'admin') {
-      return res.status(403).json({ error: 'Unauthorized' });
+    if (!session?.user?.id) { // Check for user ID in session
+      return res.status(403).json({ error: 'Unauthorized: Not logged in' });
+    }
+
+    // DATABASE CHECK: Re-fetch the user from the database
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    // Now, perform the role check on the trusted user object from the database
+    if (user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Unauthorized: Insufficient permissions' });
     }
 
     try {
