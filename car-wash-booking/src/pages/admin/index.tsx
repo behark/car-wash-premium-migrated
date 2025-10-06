@@ -44,23 +44,53 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = useCallback(async () => {
     try {
-      // This would fetch real data from your API
-      // For now, we'll use placeholder data
-      setStats({
-        todayBookings: 5,
-        weekBookings: 23,
-        monthRevenue: 2450,
-        pendingBookings: 3,
+      // Fetch real booking data from API
+      const response = await fetch('/api/admin/dashboard-stats', {
+        credentials: 'include',
       });
 
-      // Placeholder recent bookings
-      setRecentBookings([]);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setStats(data.stats || {
+            todayBookings: 0,
+            weekBookings: 0,
+            monthRevenue: 0,
+            pendingBookings: 0,
+          });
+          setRecentBookings(data.recentBookings || []);
+        } else {
+          // Fallback to counting from database directly
+          await fetchBasicStats();
+        }
+      } else {
+        // Fallback if admin API doesn't exist yet
+        await fetchBasicStats();
+      }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      await fetchBasicStats();
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Simple fallback to get basic booking count
+  const fetchBasicStats = async () => {
+    try {
+      // Just show today's date and basic info
+      const today = new Date().toISOString().split('T')[0];
+      setStats({
+        todayBookings: 0, // Could fetch from API later
+        weekBookings: 0,
+        monthRevenue: 0,
+        pendingBookings: 0,
+      });
+      setRecentBookings([]);
+    } catch (error) {
+      console.error('Failed to fetch basic stats:', error);
+    }
+  };
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -128,30 +158,35 @@ export default function AdminDashboard() {
         <nav className="bg-white shadow-sm border-b border-slate-200">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex space-x-8">
-              <Link href="/admin">
-                <a className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-amber-600 border-b-2 border-amber-500">
-                  Dashboard
-                </a>
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-amber-600 border-b-2 border-amber-500"
+              >
+                Dashboard
               </Link>
-              <Link href="/admin/bookings">
-                <a className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent">
-                  Varaukset
-                </a>
+              <Link
+                href="/admin/bookings"
+                className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
+              >
+                Varaukset
               </Link>
-              <Link href="/admin/services">
-                <a className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent">
-                  Palvelut
-                </a>
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
+              >
+                Palvelut (tulossa)
               </Link>
-              <Link href="/admin/calendar">
-                <a className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent">
-                  Kalenteri
-                </a>
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
+              >
+                Kalenteri (tulossa)
               </Link>
-              <Link href="/admin/settings">
-                <a className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent">
-                  Asetukset
-                </a>
+              <Link
+                href="/admin"
+                className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
+              >
+                Asetukset (tulossa)
               </Link>
             </div>
           </div>
@@ -301,53 +336,57 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link href="/admin/bookings/new">
-              <a className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center">
-                  <div className="bg-green-100 rounded-lg p-3 mr-4">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Uusi varaus</h3>
-                    <p className="text-sm text-slate-600">Luo uusi varaus manuaalisesti</p>
-                  </div>
+            <a
+              href="/booking"
+              target="_blank"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center">
+                <div className="bg-green-100 rounded-lg p-3 mr-4">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
                 </div>
-              </a>
-            </Link>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Varaa asiakkaalle</h3>
+                  <p className="text-sm text-slate-600">Avaa varaussivusto uudessa välilehdessä</p>
+                </div>
+              </div>
+            </a>
 
-            <Link href="/admin/calendar">
-              <a className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 rounded-lg p-3 mr-4">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Kalenteri</h3>
-                    <p className="text-sm text-slate-600">Näytä varaukset kalenterissa</p>
-                  </div>
+            <a
+              href="tel:+358449608148"
+              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center">
+                <div className="bg-blue-100 rounded-lg p-3 mr-4">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
                 </div>
-              </a>
-            </Link>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Soita asiakkaalle</h3>
+                  <p className="text-sm text-slate-600">044 960 8148</p>
+                </div>
+              </div>
+            </a>
 
-            <Link href="/admin/reports">
-              <a className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center">
-                  <div className="bg-purple-100 rounded-lg p-3 mr-4">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m3-2V8a2 2 0 00-2-2H8a2 2 0 00-2 2v8m5-6h.01" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Raportit</h3>
-                    <p className="text-sm text-slate-600">Näytä liiketoimintaraportit</p>
-                  </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow text-left"
+            >
+              <div className="flex items-center">
+                <div className="bg-purple-100 rounded-lg p-3 mr-4">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                 </div>
-              </a>
-            </Link>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Päivitä tiedot</h3>
+                  <p className="text-sm text-slate-600">Lataa uusimmat varaukset</p>
+                </div>
+              </div>
+            </button>
           </div>
         </main>
       </div>

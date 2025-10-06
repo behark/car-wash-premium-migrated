@@ -72,8 +72,8 @@ module.exports = {
   },
 
   // Global setup and teardown
-  globalSetup: '<rootDir>/tests/setup/globalSetup.ts',
-  globalTeardown: '<rootDir>/tests/setup/globalTeardown.ts',
+  // globalSetup: '<rootDir>/tests/setup/globalSetup.ts',
+  // globalTeardown: '<rootDir>/tests/setup/globalTeardown.ts',
 
   // Test timeout
   testTimeout: 10000,

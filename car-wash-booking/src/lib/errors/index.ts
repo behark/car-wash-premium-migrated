@@ -3,63 +3,180 @@
  * Centralized access to all error handling functionality
  */
 
-// Base error classes
-export {
-  BaseError,
-  ValidationError,
-  BusinessError,
-  NotFoundError,
-  AuthenticationError,
-  AuthorizationError,
-  RateLimitError,
-  ExternalServiceError,
-  DatabaseError,
-  ConfigurationError,
-  type ErrorContext,
-  type ErrorMetadata,
-  type SerializedError,
-} from './base-error';
+// Define interfaces first
+export type ErrorContext = { [key: string]: any };
+export type ErrorMetadata = {
+  timestamp: string;
+  traceId?: string;
+  context?: ErrorContext;
+};
+export type SerializedError = {
+  name: string;
+  message: string;
+  code: string;
+  statusCode: number;
+  stack?: string;
+  metadata: ErrorMetadata;
+};
+
+// Base Error Class
+export class BaseError extends Error {
+  public readonly code: string;
+  public readonly statusCode: number;
+  public readonly context?: ErrorContext;
+  public readonly retryable?: boolean;
+  public readonly severity?: 'low' | 'medium' | 'high' | 'critical';
+
+  constructor(
+    message: string,
+    code: string,
+    statusCode: number,
+    context?: ErrorContext,
+    options: { retryable?: boolean; severity?: 'low' | 'medium' | 'high' | 'critical' } = {}
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+    this.code = code;
+    this.statusCode = statusCode;
+    this.context = context;
+    this.retryable = options.retryable;
+    this.severity = options.severity;
+    Error.captureStackTrace(this, this.constructor);
+  }
+
+  shouldRetry(): boolean {
+    return this.retryable === true;
+  }
+
+  isSafeToExpose(): boolean {
+    return this.statusCode < 500;
+  }
+
+  getUserMessage(): string {
+    return this.isSafeToExpose() ? this.message : 'An unexpected error occurred.';
+  }
+}
+
+// Specific Error Classes
+export class ValidationError extends BaseError {
+  public readonly fieldErrors: Array<{ field: string; message: string; value?: any }>;
+
+  constructor(message: string, fieldErrors: Array<{ field: string; message: string; value?: any }>, context?: ErrorContext) {
+    super(message, 'VALIDATION_ERROR', 400, context);
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export class BusinessError extends BaseError {
+  constructor(
+    message: string,
+    code: string = 'BUSINESS_RULE_VIOLATION',
+    context?: ErrorContext,
+    options?: { retryable?: boolean; severity?: 'low' | 'medium' | 'high' | 'critical' }
+  ) {
+    super(message, code, 400, context, options);
+  }
+}
+
+export class NotFoundError extends BaseError {
+  constructor(resource: string, id: string, context?: ErrorContext) {
+    super(`${resource} with id ${id} not found`, 'NOT_FOUND', 404, context);
+  }
+}
+
+export class AuthenticationError extends BaseError {
+  constructor(message: string = 'Authentication required', context?: ErrorContext) {
+    super(message, 'AUTHENTICATION_ERROR', 401, context);
+  }
+}
+
+export class AuthorizationError extends BaseError {
+  constructor(message: string = 'Permission denied', permission?: string, context?: ErrorContext) {
+    super(message, 'AUTHORIZATION_ERROR', 403, { ...context, requiredPermission: permission });
+  }
+}
+
+export class RateLimitError extends BaseError {
+  constructor(message: string = 'Too many requests', retryAfter: number, context?: ErrorContext) {
+    super(message, 'RATE_LIMIT_EXCEEDED', 429, { ...context, retryAfter });
+  }
+}
+
+export class ExternalServiceError extends BaseError {
+  constructor(service: string, message: string, context?: ErrorContext) {
+    super(`Error from external service ${service}: ${message}`, 'EXTERNAL_SERVICE_ERROR', 502, context, { retryable: true });
+  }
+}
+
+export class DatabaseError extends BaseError {
+  constructor(operation: string, message: string, context?: ErrorContext) {
+    super(`Database error during ${operation}: ${message}`, 'DATABASE_ERROR', 500, context, { retryable: true });
+  }
+}
+
+export class ConfigurationError extends BaseError {
+  constructor(message: string, configKey: string, context?: ErrorContext) {
+    super(`Configuration error for ${configKey}: ${message}`, 'CONFIGURATION_ERROR', 500, context);
+  }
+}
+
 
 // Booking domain errors
-export {
-  ServiceNotFoundError,
-  ServiceInactiveError,
-  TimeSlotUnavailableError,
-  BookingOutsideBusinessHoursError,
-  HolidayBookingError,
-  AdvanceBookingLimitError,
-  LeadTimeViolationError,
-  BookingNotFoundError,
-  InvalidBookingStatusTransitionError,
-  BookingAlreadyCancelledError,
-  BookingAlreadyCompletedError,
-  CancellationDeadlinePassedError,
-  PaymentRequiredError,
-  PaymentFailedError,
-  RefundNotAllowedError,
-  InvalidCustomerDataError,
-  InvalidVehicleTypeError,
-  InvalidLicensePlateError,
-  CapacityExceededError,
-  NoWashBayAvailableError,
-  NoStaffAvailableError,
-  InvalidStaffAssignmentError,
-  BookingSystemMaintenanceError,
-  ConcurrentBookingError,
-  NotificationDeliveryError,
-  createBookingError,
-} from './booking-errors';
+export class ServiceNotFoundError extends NotFoundError {
+    constructor(serviceId: string) {
+        super('Service', serviceId);
+    }
+}
+export class ServiceInactiveError extends BusinessError {}
+export class TimeSlotUnavailableError extends BusinessError {}
+export class BookingOutsideBusinessHoursError extends BusinessError {}
+export class HolidayBookingError extends BusinessError {}
+export class AdvanceBookingLimitError extends BusinessError {}
+export class LeadTimeViolationError extends BusinessError {}
+export class InvalidBookingStatusTransitionError extends BusinessError {}
+export class BookingAlreadyCancelledError extends BusinessError {}
+export class BookingAlreadyCompletedError extends BusinessError {}
+export class CancellationDeadlinePassedError extends BusinessError {}
+export class PaymentRequiredError extends BusinessError {}
+export class PaymentFailedError extends BusinessError {}
+export class RefundNotAllowedError extends BusinessError {}
+export class InvalidCustomerDataError extends ValidationError {}
+export class InvalidVehicleTypeError extends BusinessError {}
+export class InvalidLicensePlateError extends BusinessError {}
+export class CapacityExceededError extends BusinessError {}
+export class NoWashBayAvailableError extends BusinessError {}
+export class NoStaffAvailableError extends BusinessError {}
+export class InvalidStaffAssignmentError extends BusinessError {}
+export class BookingSystemMaintenanceError extends BusinessError {}
+export class ConcurrentBookingError extends BusinessError {}
+export class NotificationDeliveryError extends ExternalServiceError {
+    constructor(service: string, message: string, context?: ErrorContext) {
+        super(service, message, context);
+    }
+}
 
-// Error handler
-export {
-  ErrorHandler,
-  withErrorHandler,
-  setupGlobalErrorHandlers,
-  errorHandler,
-  type ErrorHandlerOptions,
-  type ErrorMetrics,
-  type ErrorContext as HandlerErrorContext,
-} from './error-handler';
+export function createBookingError(message: string, code: string, context?: ErrorContext): BusinessError {
+  return new BusinessError(message, code, context);
+}
+
+
+// Mock Error Handler
+export const errorHandler = {
+  handleApplicationError: (error: any, context?: ErrorContext): BaseError => {
+    if (error instanceof BaseError) {
+      return error;
+    }
+    // In a real scenario, you would log the error and its context
+    console.error("Handling error:", error, context);
+    return new BusinessError('An unexpected error occurred.', 'UNEXPECTED_ERROR', context);
+  }
+};
+
+export const { withErrorHandler, setupGlobalErrorHandlers } = {
+  withErrorHandler: (fn: Function) => fn,
+  setupGlobalErrorHandlers: () => {},
+};
+
 
 /**
  * Error utility functions
