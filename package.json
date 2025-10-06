@@ -1,4 +1,15 @@
 {
+  "name": "kiiltoloisto-fi-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd car-wash-booking && npm ci && npm run build",
+    "start": "cd car-wash-booking && npm start",
+    "postinstall": "cd car-wash-booking && npm ci"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "pg": "^8.16.3"
   }
