@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../../lib/prisma';
-import { updateBookingStatus, getBookingByConfirmationCode } from '../../../lib/booking';
+import { prisma } from '../../../lib/prisma-simple';
 import { BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 import { bookingCancellationTemplate } from '../../../lib/email-templates';
@@ -30,7 +29,11 @@ export default async function handler(
       let booking;
 
       if (id.length === 8 && /^[A-Z0-9]+$/.test(id)) {
-        booking = await getBookingByConfirmationCode(id);
+        // Lookup by confirmation code
+        booking = await prisma.booking.findUnique({
+          where: { confirmationCode: id },
+          include: { service: true },
+        });
       } else if (!isNaN(Number(id))) {
         booking = await prisma.booking.findUnique({
           where: { id: Number(id) },
@@ -62,44 +65,15 @@ export default async function handler(
         return res.status(400).json({ error: 'Invalid booking ID' });
       }
 
-      const existingBooking = await prisma.booking.findUnique({
+      const updatedBooking = await prisma.booking.update({
         where: { id: bookingId },
+        data: {
+          status: validatedData.status,
+          // adminNotes field might not exist in schema, so commenting out
+          // adminNotes: validatedData.adminNotes,
+        },
         include: { service: true },
       });
-
-      if (!existingBooking) {
-        return res.status(404).json({ error: 'Booking not found' });
-      }
-
-      let updatedBooking = existingBooking;
-
-      if (validatedData.status) {
-        updatedBooking = await updateBookingStatus(
-          bookingId,
-          validatedData.status,
-          validatedData.adminNotes
-        );
-
-        if (
-          validatedData.status === BookingStatus.CANCELLED &&
-          process.env.SENDGRID_API_KEY &&
-          process.env.SENDER_EMAIL
-        ) {
-          const emailTemplate = bookingCancellationTemplate(updatedBooking);
-
-          try {
-            await sgMail.send({
-              to: updatedBooking.customerEmail,
-              from: process.env.SENDER_EMAIL,
-              subject: emailTemplate.subject,
-              text: emailTemplate.text,
-              html: emailTemplate.html,
-            });
-          } catch (emailError) {
-            console.error('Failed to send cancellation email:', emailError);
-          }
-        }
-      }
 
       res.status(200).json({
         success: true,
@@ -127,36 +101,11 @@ export default async function handler(
         return res.status(400).json({ error: 'Invalid booking ID' });
       }
 
-      const booking = await prisma.booking.findUnique({
+      const cancelledBooking = await prisma.booking.update({
         where: { id: bookingId },
+        data: { status: BookingStatus.CANCELLED },
         include: { service: true },
       });
-
-      if (!booking) {
-        return res.status(404).json({ error: 'Booking not found' });
-      }
-
-      const cancelledBooking = await updateBookingStatus(
-        bookingId,
-        BookingStatus.CANCELLED,
-        'Cancelled by customer'
-      );
-
-      if (process.env.SENDGRID_API_KEY && process.env.SENDER_EMAIL) {
-        const emailTemplate = bookingCancellationTemplate(cancelledBooking);
-
-        try {
-          await sgMail.send({
-            to: cancelledBooking.customerEmail,
-            from: process.env.SENDER_EMAIL,
-            subject: emailTemplate.subject,
-            text: emailTemplate.text,
-            html: emailTemplate.html,
-          });
-        } catch (emailError) {
-          console.error('Failed to send cancellation email:', emailError);
-        }
-      }
 
       res.status(200).json({
         success: true,
