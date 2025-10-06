@@ -174,8 +174,8 @@ export default function MobileBookingForm() {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Redirect to success page with booking confirmation
-      window.location.href = `/booking/confirmation?booking=${bookingData.data.booking.confirmationCode}`;
+      // Redirect to simple success page with booking confirmation
+      window.location.href = `/booking/success?booking=${bookingData.data.booking.confirmationCode}`;
     } catch (error: any) {
       setError(error.message);
       setLoading(false);
