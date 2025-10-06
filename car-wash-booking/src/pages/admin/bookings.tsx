@@ -29,6 +29,8 @@ export default function AdminBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -56,6 +58,36 @@ export default function AdminBookings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStatusChange = async (bookingId: number, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh bookings to show updated status
+        fetchBookings();
+        alert(`Varaus ${newStatus === 'CONFIRMED' ? 'vahvistettu' : 'päivitetty'} onnistuneesti!`);
+      } else {
+        alert('Virhe varauksen päivityksessä');
+      }
+    } catch (error) {
+      console.error('Status update error:', error);
+      alert('Virhe varauksen päivityksessä');
+    }
+  };
+
+  const showBookingDetails = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowDetails(true);
   };
 
   if (status === 'loading' || loading) {
@@ -218,18 +250,24 @@ export default function AdminBookings() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          <button
+                            onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            ✅ Vahvista
+                          </button>
                           <a
                             href={`tel:${booking.customerPhone}`}
                             className="text-blue-600 hover:text-blue-900"
                           >
-                            Soita
+                            📞 Soita
                           </a>
-                          <a
-                            href={`mailto:${booking.customerEmail}`}
-                            className="text-green-600 hover:text-green-900"
+                          <button
+                            onClick={() => showBookingDetails(booking)}
+                            className="text-amber-600 hover:text-amber-900"
                           >
-                            Email
-                          </a>
+                            👁️ Näytä
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -262,6 +300,115 @@ export default function AdminBookings() {
             </div>
           </div>
         </main>
+
+        {/* Booking Details Modal */}
+        {showDetails && selectedBooking && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    Varaus {selectedBooking.confirmationCode}
+                  </h2>
+                  <button
+                    onClick={() => setShowDetails(false)}
+                    className="text-slate-500 hover:text-slate-700"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Customer Info */}
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-slate-900 mb-3">Asiakastiedot</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-600">Nimi:</span>
+                        <div className="font-medium">{selectedBooking.customerName}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600">Puhelin:</span>
+                        <div className="font-medium">
+                          <a href={`tel:${selectedBooking.customerPhone}`} className="text-blue-600 hover:underline">
+                            {selectedBooking.customerPhone}
+                          </a>
+                        </div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <span className="text-slate-600">Sähköposti:</span>
+                        <div className="font-medium">
+                          <a href={`mailto:${selectedBooking.customerEmail}`} className="text-blue-600 hover:underline">
+                            {selectedBooking.customerEmail}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Booking Details */}
+                  <div className="bg-amber-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-slate-900 mb-3">Varauksen tiedot</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-slate-600">Palvelu:</span>
+                        <div className="font-medium">{selectedBooking.service.titleFi}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600">Hinta:</span>
+                        <div className="font-medium">{(selectedBooking.service.priceCents / 100).toFixed(0)}€</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600">Päivä:</span>
+                        <div className="font-medium">{format(new Date(selectedBooking.date), 'dd.MM.yyyy')}</div>
+                      </div>
+                      <div>
+                        <span className="text-slate-600">Aika:</span>
+                        <div className="font-medium">{selectedBooking.startTime} - {selectedBooking.endTime}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Actions */}
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-slate-900 mb-3">Varauksen tila</h3>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => {
+                          handleStatusChange(selectedBooking.id, 'CONFIRMED');
+                          setShowDetails(false);
+                        }}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
+                      >
+                        ✅ Vahvista varaus
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleStatusChange(selectedBooking.id, 'COMPLETED');
+                          setShowDetails(false);
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
+                      >
+                        ✅ Merkitse valmiiksi
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleStatusChange(selectedBooking.id, 'CANCELLED');
+                          setShowDetails(false);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+                      >
+                        ❌ Peruuta
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -13,7 +13,7 @@ import {
   InvalidBookingStatusTransitionError,
   PaymentRequiredError,
   BookingNotFoundError,
-} from '../errors';
+} from '../errors/index';
 
 export interface BookingDomainModel {
   id?: number;

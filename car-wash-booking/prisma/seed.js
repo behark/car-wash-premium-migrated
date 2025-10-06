@@ -69,6 +69,40 @@ async function main() {
       image: '/images/service-normaalivaha.svg',
       isActive: true,
     },
+    // RENKAIDEN VAIHTO & SÄILYTYS (Tire Services)
+    {
+      titleFi: 'Renkaiden vaihto (kevät/talvi)',
+      titleEn: 'Tire Change (Summer/Winter)',
+      descriptionFi: 'Ammattitaitoinen renkaiden vaihto kevät- ja talvirenkaisiin. Sisältää tasapainotuksen.',
+      descriptionEn: 'Professional tire change between summer and winter tires. Includes balancing.',
+      priceCents: 4000, // 40€
+      durationMinutes: 45,
+      capacity: 1,
+      image: '/images/service-renkaiden-vaihto.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Renkaiden säilytys (kausi)',
+      titleEn: 'Tire Storage (Seasonal)',
+      descriptionFi: 'Turvallinen renkaiden säilytys kauden ajan. Mukava palvelu ilman omaa varastotilaa.',
+      descriptionEn: 'Safe tire storage for the season. Convenient service without your own storage space.',
+      priceCents: 8000, // 80€
+      durationMinutes: 15, // Just drop-off/pickup time
+      capacity: 3,
+      image: '/images/service-renkaiden-sailytys.svg',
+      isActive: true,
+    },
+    {
+      titleFi: 'Renkaiden vaihto + Säilytys',
+      titleEn: 'Tire Change + Storage',
+      descriptionFi: 'Renkaidenvaihto ja vanhojen renkaiden säilytys seuraavaan kauteen. Kaikki yhdessä paketissa.',
+      descriptionEn: 'Tire change and storage of old tires for the next season. Everything in one package.',
+      priceCents: 11000, // 110€
+      durationMinutes: 60,
+      capacity: 1,
+      image: '/images/service-vaihto-sailytys.svg',
+      isActive: true,
+    },
   ];
 
   for (let i = 0; i < services.length; i++) {

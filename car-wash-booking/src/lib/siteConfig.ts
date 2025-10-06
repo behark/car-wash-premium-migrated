@@ -1,8 +1,8 @@
 export const siteConfig = {
   name: 'Autopesu Kiilto & Loisto',
   shortName: 'Kiilto & Loisto',
-  tagline: 'Asiantuntevasti Kiiltävään Lopputulokseen',
-  subtitle: 'Laadukasta autopesupalvelua kilpailukykyisillä hinnoilla',
+  tagline: 'PERUS- & ERIKOISPESUT RENKAIDEN VAIHTO & SÄILYTYS',
+  subtitle: 'Ammattitaitoista autopesupalvelua Helsingissä',
   siteUrl: 'https://www.kiiltoloisto.fi',
   heroImage: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?q=80&w=2000&auto=format&fit=crop', // Professional car wash in action
   heroVideo: 'https://videos.pexels.com/video-files/3006792/3006792-uhd_2560_1440_30fps.mp4', // Professional car wash video
@@ -18,9 +18,9 @@ export const siteConfig = {
     mapsQuery: 'Läkkiseränttie 15, Helsinki, Finland',
   },
   hours: [
-    { label: 'Ma–Pe', value: '08:00–18:00' },
-    { label: 'La', value: '10:00–16:00' },
-    { label: 'Su', value: 'Suljettu' },
+    { label: 'MA-PE', value: '08:00-18:00' },
+    { label: 'LA', value: '10:00-16:00' },
+    { label: 'SU', value: 'Suljettu' },
   ],
   email: 'Info@kiiltoloisto.fi',
   emailFrom: 'Info@kiiltoloisto.fi',
