@@ -106,20 +106,41 @@ export default function BookingSuccess() {
 
               {/* Actions */}
               <div className="mt-8 space-y-4">
-                <Link
-                  href="/booking"
-                  className="inline-block bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-gold-600 hover:to-gold-700 transition-all duration-300 transform hover:scale-105"
-                >
-                  Varaa Uusi Aika
-                </Link>
-
-                <div className="text-sm">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
-                    href="/"
-                    className="text-navy-600 hover:text-navy-800 underline"
+                    href="/booking"
+                    className="bg-gradient-to-r from-gold-500 to-gold-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-gold-600 hover:to-gold-700 transition-all duration-300 transform hover:scale-105 text-center"
                   >
-                    Palaa etusivulle
+                    Varaa Uusi Aika
                   </Link>
+
+                  {confirmationCode && (
+                    <Link
+                      href={`/manage?code=${confirmationCode}`}
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 text-center"
+                    >
+                      Hallinnoi varausta
+                    </Link>
+                  )}
+                </div>
+
+                <div className="text-sm space-y-2">
+                  <div>
+                    <Link
+                      href="/reviews"
+                      className="text-green-600 hover:text-green-800 underline"
+                    >
+                      ⭐ Jätä arvostelu palvelustamme
+                    </Link>
+                  </div>
+                  <div>
+                    <Link
+                      href="/"
+                      className="text-navy-600 hover:text-navy-800 underline"
+                    >
+                      Palaa etusivulle
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

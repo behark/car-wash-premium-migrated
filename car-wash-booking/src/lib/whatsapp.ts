@@ -29,15 +29,23 @@ export async function sendWhatsApp(
   to: string,
   body: string
 ): Promise<{ success: boolean; error?: string; messageId?: string }> {
+  // Enhanced logging for debugging
+  console.log('🔍 WhatsApp Debug - Starting send process...');
+  console.log('📱 Target phone:', to);
+  console.log('📝 Message preview:', body.substring(0, 50) + '...');
+
   const validation = validateWhatsAppConfig();
 
   if (!validation.isValid) {
     const errorMsg = `WhatsApp service not configured: ${validation.error}`;
+    console.log('❌ WhatsApp Config Error:', errorMsg);
     logger.warn(errorMsg);
 
     // Return gracefully instead of throwing - allows site to work without WhatsApp
     return { success: false, error: validation.error };
   }
+
+  console.log('✅ WhatsApp config validation passed');
 
   try {
     const client = twilio(
@@ -83,8 +91,24 @@ export function generateBookingConfirmationWhatsApp(
   serviceName: string,
   date: string,
   time: string,
-  price: string
+  price: string,
+  loyaltyInfo?: {
+    tier: string;
+    points: number;
+    totalPoints: number;
+    discount?: number;
+    savings?: string;
+  }
 ) {
+  const loyaltySection = loyaltyInfo ? `
+
+🎁 *Kanta-asiakasedut:*
+• *Taso:* ${loyaltyInfo.tier}
+• *Pisteet tästä varauksesta:* +${loyaltyInfo.points}
+• *Pisteesi yhteensä:* ${loyaltyInfo.totalPoints}${loyaltyInfo.discount ? `
+• *Asiakasalennus:* ${(loyaltyInfo.discount * 100).toFixed(0)}%` : ''}${loyaltyInfo.savings ? `
+• *Säästit:* ${loyaltyInfo.savings}` : ''}` : '';
+
   return `🚗 *Varaus vahvistettu!*
 
 Hei ${customerName}!
@@ -94,11 +118,12 @@ Varauksesi on vahvistettu:
 • *Päivä:* ${date}
 • *Aika:* ${time}
 • *Hinta:* ${price}
-• *Vahvistuskoodi:* ${confirmationCode}
+• *Vahvistuskoodi:* ${confirmationCode}${loyaltySection}
 
 📍 *Autopesu Kiilto & Loisto*
 Läkkiseränttie 15, Helsinki
 📞 044 960 8148
+🕒 MA-PE 08:00-18:00, LA 10:00-16:00
 
 Nähdään pesulassa! ✨`;
 }

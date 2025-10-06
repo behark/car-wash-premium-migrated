@@ -10,7 +10,14 @@ export interface EmailTemplate {
 }
 
 export function bookingConfirmationTemplate(
-  booking: Booking & { service: Service }
+  booking: Booking & { service: Service },
+  loyaltyInfo?: {
+    tier: string;
+    points: number;
+    totalPoints: number;
+    discount?: number;
+    savings?: string;
+  }
 ): EmailTemplate {
   const formattedDate = format(new Date(booking.date), 'EEEE d.M.yyyy', { locale: fi });
   const price = (booking.priceCents / 100).toFixed(2);
@@ -98,6 +105,18 @@ export function bookingConfirmationTemplate(
             <p><strong>Hinta:</strong> ${price} €</p>
             ${booking.notes ? `<p><strong>Lisätiedot:</strong> ${booking.notes}</p>` : ''}
           </div>
+
+          ${loyaltyInfo ? `
+          <div class="booking-details" style="background: #e8f5e8; border-left: 4px solid #28a745;">
+            <h3>🏆 Kanta-asiakasedut</h3>
+            <p><strong>Asiakastaso:</strong> ${loyaltyInfo.tier}</p>
+            <p><strong>Pisteet tästä varauksesta:</strong> +${loyaltyInfo.points}</p>
+            <p><strong>Pisteesi yhteensä:</strong> ${loyaltyInfo.totalPoints}</p>
+            ${loyaltyInfo.discount ? `<p><strong>Asiakasalennus:</strong> ${(loyaltyInfo.discount * 100).toFixed(0)}%</p>` : ''}
+            ${loyaltyInfo.savings ? `<p><strong>Säästit:</strong> ${loyaltyInfo.savings}</p>` : ''}
+            <p style="font-size: 12px; color: #666;">Kerää pisteitä jokaista euroa kohti ja nouse korkeampiin asiakatasoihin saadaksesi parempia alennuksia!</p>
+          </div>
+          ` : ''}
 
           <h3>Osoite:</h3>
           <p>

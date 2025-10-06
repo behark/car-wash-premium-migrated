@@ -23,6 +23,7 @@ model Service {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   bookings        Booking[]
+  testimonials    Testimonial[]
 }
 
 model Booking {
@@ -38,6 +39,7 @@ model Booking {
   customerName      String
   customerEmail     String
   customerPhone     String
+  customerId        Int?               // Link to Customer for loyalty program
   notes             String?
   paymentStatus     PaymentStatus      @default(PENDING)
   paymentIntentId   String?
@@ -61,10 +63,12 @@ model Booking {
   statusHistory     Json?              // Array of status change records
   // Relations
   service           Service            @relation(fields: [serviceId], references: [id])
+  customer          Customer?          @relation(fields: [customerId], references: [id])
   timeSlot          TimeSlot?          @relation(fields: [timeSlotId], references: [id])
   assignedStaff     Staff?             @relation(fields: [assignedStaffId], references: [id])
   assignedBay       WashBay?           @relation(fields: [assignedBayId], references: [id])
   statusHistoryLog  BookingStatusHistory[]
+  testimonials      Testimonial[]
 
   @@index([date, startTime])
   @@index([customerEmail])
@@ -75,13 +79,31 @@ model Booking {
 }
 
 model Testimonial {
-  id        Int      @id @default(autoincrement())
-  name      String
-  contentFi String
-  contentEn String
-  rating    Int
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  name              String
+  contentFi         String
+  contentEn         String
+  rating            Int
+  approved          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  // Enhanced review fields
+  title             String?
+  customerEmail     String?
+  serviceRating     Int?     // Rating for service quality (1-5)
+  staffRating       Int?     // Rating for staff friendliness (1-5)
+  facilityRating    Int?     // Rating for facility cleanliness (1-5)
+  recommendToFriend Boolean? // Would recommend to a friend
+  bookingId         Int?     // Link to specific booking
+  serviceId         Int?     // Which service was reviewed
+
+  // Relations
+  booking           Booking? @relation(fields: [bookingId], references: [id])
+  service           Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([approved])
+  @@index([rating])
+  @@index([customerEmail])
 }
 
 model User {
@@ -91,6 +113,32 @@ model User {
   role         String
   passwordHash String
   createdAt    DateTime @default(now())
+}
+
+model Customer {
+  id                Int      @id @default(autoincrement())
+  name              String
+  email             String   @unique
+  phone             String?
+  loyaltyPoints     Int      @default(0)
+  totalSpent        Int      @default(0)  // in cents
+  visitCount        Int      @default(0)
+  loyaltyTier       String   @default("BRONZE")  // BRONZE, SILVER, GOLD, PLATINUM
+  lastVisit         DateTime?
+  joinDate          DateTime @default(now())
+  birthday          DateTime?
+  preferredServices Json?    // Array of preferred service IDs
+  notes             String?  // Admin notes about customer preferences
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  bookings          Booking[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([loyaltyTier])
 }
 
 model Setting {

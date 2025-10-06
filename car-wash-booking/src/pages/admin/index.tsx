@@ -171,22 +171,22 @@ export default function AdminDashboard() {
                 Varaukset
               </Link>
               <Link
-                href="/admin"
+                href="/admin/analytics"
                 className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
               >
-                Palvelut (tulossa)
+                📊 Analytiikka
               </Link>
               <Link
-                href="/admin"
+                href="/admin/reviews"
                 className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
               >
-                Kalenteri (tulossa)
+                ⭐ Arvostelut
               </Link>
               <Link
-                href="/admin"
+                href="/admin/customers"
                 className="inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 hover:border-slate-300 border-b-2 border-transparent"
               >
-                Asetukset (tulossa)
+                👥 Asiakkaat
               </Link>
             </div>
           </div>

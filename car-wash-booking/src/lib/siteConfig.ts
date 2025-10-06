@@ -11,11 +11,11 @@ export const siteConfig = {
     tel: '+358449608148',
   },
   address: {
-    street: 'Läkkiseränttie 15',
+    street: 'Läkkisepäntie 15',
     city: 'Helsinki',
-    postalCode: '00320',
+    postalCode: '00620',
     country: 'Suomi',
-    mapsQuery: 'Läkkiseränttie 15, Helsinki, Finland',
+    mapsQuery: 'Läkkisepäntie 15, 00620 Helsinki, Finland',
   },
   hours: [
     { label: 'MA-PE', value: '08:00-18:00' },

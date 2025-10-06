@@ -4,6 +4,9 @@ import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { format, addMinutes } from 'date-fns';
 import { sendWhatsApp, generateBookingConfirmationWhatsApp, generateAdminNotificationWhatsApp } from '../../../lib/whatsapp';
 import { sendSMS, generateBookingConfirmationSMS } from '../../../lib/sms';
+import { sendBookingConfirmationEmail } from '../../../lib/email';
+import { getOrCreateCustomer, awardLoyaltyPoints, calculateCustomerDiscount } from '../../../lib/loyalty';
+import { calculateTotalPrice } from '../../../lib/pricing';
 
 // Simple confirmation code generator
 function generateConfirmationCode(): string {
@@ -92,7 +95,23 @@ export default async function handler(
 
     const confirmationCode = generateConfirmationCode();
 
-    // Create the booking
+    // Get or create customer for loyalty program
+    const customer = await getOrCreateCustomer(
+      customerName,
+      customerEmail,
+      customerPhone
+    );
+
+    // Calculate pricing with vehicle size and loyalty discounts
+    const pricingDetails = calculateTotalPrice(
+      service.priceCents,
+      vehicleType,
+      customer.loyaltyTier === 'BRONZE' ? 0 :
+      customer.loyaltyTier === 'SILVER' ? 0.05 :
+      customer.loyaltyTier === 'GOLD' ? 0.10 : 0.15
+    );
+
+    // Create the booking with dynamic pricing
     const booking = await prisma.booking.create({
       data: {
         serviceId: parseInt(serviceId),
@@ -101,11 +120,12 @@ export default async function handler(
         startTime: format(startDateTime, 'HH:mm'),
         endTime: format(endDateTime, 'HH:mm'),
         duration: service.durationMinutes,
-        priceCents: service.priceCents,
+        priceCents: pricingDetails.finalPrice,
         status: BookingStatus.PENDING,
         customerName,
         customerEmail,
         customerPhone,
+        customerId: customer.id, // Link to customer for loyalty
         licensePlate: licensePlate || null,
         notes: notes || null,
         paymentStatus: PaymentStatus.PENDING,
@@ -113,13 +133,29 @@ export default async function handler(
       },
       include: {
         service: true,
+        customer: true,
       },
     });
+
+    // Award loyalty points for the booking
+    const loyaltyStatus = await awardLoyaltyPoints(customer.id, pricingDetails.finalPrice);
 
     // Send notifications (non-blocking)
     const dateString = format(new Date(date), 'dd.MM.yyyy');
     const timeString = startTime;
-    const priceString = `${(service.priceCents / 100).toFixed(0)}€`;
+    const priceString = `${(pricingDetails.finalPrice / 100).toFixed(0)}€`;
+
+    // Enhanced WhatsApp message with loyalty info
+    const loyaltyMessage = customer.loyaltyTier !== 'BRONZE'
+      ? `\n🎁 ${customer.loyaltyTier} asiakasetu: ${loyaltyStatus.discount * 100}% alennus!`
+      : '';
+
+    const pointsMessage = `\n⭐ Sait ${Math.floor(pricingDetails.finalPrice / 100)} kanta-asiakaspistettä!`;
+    const totalPointsMessage = `\n🏆 Pisteesi yhteensä: ${loyaltyStatus.currentPoints}`;
+
+    const pricingInfo = pricingDetails.savings > 0
+      ? `\n💰 Säästit: ${(pricingDetails.savings / 100).toFixed(0)}€`
+      : '';
 
     // Send WhatsApp notification to customer
     if (customerPhone) {
@@ -129,7 +165,14 @@ export default async function handler(
         service.titleFi,
         dateString,
         timeString,
-        priceString
+        priceString,
+        {
+          tier: loyaltyStatus.tier,
+          points: Math.floor(pricingDetails.finalPrice / 100),
+          totalPoints: loyaltyStatus.currentPoints,
+          discount: loyaltyStatus.discount,
+          savings: pricingDetails.savings > 0 ? `${(pricingDetails.savings / 100).toFixed(0)}€` : undefined,
+        }
       );
 
       sendWhatsApp(customerPhone, whatsappMessage).catch(error => {
@@ -151,6 +194,19 @@ export default async function handler(
         console.log('SMS notification failed (non-critical):', error);
       });
     }
+
+    // Send email confirmation
+    const emailLoyaltyInfo = {
+      tier: loyaltyStatus.tier,
+      points: Math.floor(pricingDetails.finalPrice / 100),
+      totalPoints: loyaltyStatus.currentPoints,
+      discount: loyaltyStatus.discount,
+      savings: pricingDetails.savings > 0 ? `${(pricingDetails.savings / 100).toFixed(0)}€` : undefined,
+    };
+
+    sendBookingConfirmationEmail(customerEmail, booking, emailLoyaltyInfo).catch(error => {
+      console.log('Email notification failed (non-critical):', error);
+    });
 
     // Send admin notification if admin phone is configured
     const adminPhone = process.env.ADMIN_PHONE;
@@ -180,6 +236,19 @@ export default async function handler(
             titleFi: booking.service.titleFi,
             durationMinutes: booking.service.durationMinutes,
             priceCents: booking.service.priceCents,
+          },
+          pricing: {
+            originalPrice: service.priceCents,
+            finalPrice: pricingDetails.finalPrice,
+            savings: pricingDetails.savings,
+            breakdown: pricingDetails.breakdown,
+          },
+          loyalty: {
+            tier: loyaltyStatus.tier,
+            points: loyaltyStatus.currentPoints,
+            pointsEarned: Math.floor(pricingDetails.finalPrice / 100),
+            discount: loyaltyStatus.discount,
+            nextTier: loyaltyStatus.nextTier,
           },
           date: booking.date.toISOString(),
           startTime: booking.startTime,
