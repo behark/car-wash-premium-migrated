@@ -242,31 +242,36 @@ export default function Booking() {
                   <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 md:mb-6">Valitse palvelu</h2>
                   <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                     {services.map((service) => (
-                      <button
-                        type="button"
+                      <div
                         key={service.id}
-                        className={`relative p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 text-left w-full active:scale-[0.98] ${
+                        className={`relative p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 text-left w-full cursor-pointer ${
                           selectedService === service.id
                             ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-300'
                             : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400 active:bg-purple-50'
                         }`}
                         style={{
-                          cursor: 'pointer',
                           touchAction: 'manipulation',
                           WebkitTapHighlightColor: 'transparent',
-                          userSelect: 'none'
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none',
+                          MozUserSelect: 'none',
+                          msUserSelect: 'none'
                         }}
                         onClick={() => setSelectedService(service.id)}
+                        onTouchStart={() => {}}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={selectedService === service.id}
                       >
-                        <div className="flex justify-between items-start mb-3 pointer-events-none">
+                        <div className="flex justify-between items-start mb-3">
                           <h3 className="text-xl font-bold text-slate-900">{service.titleFi}</h3>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-slate-900">{formatPrice(service.priceCents)}</div>
                             <div className="text-sm text-slate-600">{formatDuration(service.durationMinutes)}</div>
                           </div>
                         </div>
-                        <p className="text-slate-600 mb-4 pointer-events-none">{service.descriptionFi}</p>
-                      </button>
+                        <p className="text-slate-600 mb-4">{service.descriptionFi}</p>
+                      </div>
                     ))}
                   </div>
                 </div>
