@@ -269,14 +269,14 @@ export default function Booking() {
                         tabIndex={0}
                         aria-pressed={selectedService === service.id}
                       >
-                        <div className="flex justify-between items-start mb-3" style={{ pointerEvents: 'none' }}>
-                          <h3 className="text-xl font-bold text-slate-900" style={{ pointerEvents: 'none' }}>{service.titleFi}</h3>
-                          <div className="text-right" style={{ pointerEvents: 'none' }}>
-                            <div className="text-2xl font-bold text-slate-900" style={{ pointerEvents: 'none' }}>{formatPrice(service.priceCents)}</div>
-                            <div className="text-sm text-slate-600" style={{ pointerEvents: 'none' }}>{formatDuration(service.durationMinutes)}</div>
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="text-xl font-bold text-slate-900">{service.titleFi}</h3>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-slate-900">{formatPrice(service.priceCents)}</div>
+                            <div className="text-sm text-slate-600">{formatDuration(service.durationMinutes)}</div>
                           </div>
                         </div>
-                        <p className="text-slate-600 mb-4" style={{ pointerEvents: 'none' }}>{service.descriptionFi}</p>
+                        <p className="text-slate-600 mb-4">{service.descriptionFi}</p>
                       </div>
                     ))}
                   </div>

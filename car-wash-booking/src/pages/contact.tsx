@@ -106,19 +106,32 @@ export default function Contact() {
 
             <div>
               <h2 className="text-2xl font-bold mb-6">Sijainti kartalla</h2>
-              <div className="bg-gray-200 rounded-lg h-96 overflow-hidden">
+              <div className="bg-gray-200 rounded-lg h-96 overflow-hidden relative">
                 <iframe
                   title={`${siteConfig.name} sijainti`}
                   width="100%"
                   height="100%"
                   frameBorder="0"
                   style={{ border: 0 }}
-                  src="https://maps.google.com/maps?q=60.230844,25.034566&hl=fi&z=15&output=embed"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(siteConfig.address.mapsQuery)}&hl=fi&z=15&output=embed`}
                   allowFullScreen
                   className="rounded-lg"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
+                <div className="absolute bottom-4 right-4">
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(siteConfig.address.mapsQuery)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white hover:bg-gray-50 shadow-lg rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Avaa Google Mapsissa
+                  </a>
+                </div>
               </div>
               <p className="text-sm text-gray-600 mt-2">
                 Helppo saavutettavuus julkisilla kulkuneuvoilla ja ilmainen pysäköinti.
