@@ -113,7 +113,7 @@ export default function Contact() {
                   height="100%"
                   frameBorder="0"
                   style={{ border: 0 }}
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1982.6918447916!2d25.034566!3d60.230844!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x468df66e3c3e3e3d%3A0x3e3e3e3e3e3e3e3e!2sL%C3%A4kkisep%C3%A4ntie%2015%2C%2000620%20Helsinki!5e0!3m2!1sen!2sfi!4v1609459200000!5m2!1sen!2sfi"
+                  src="https://www.google.com/maps?q=Läkkisepäntie+15,+00620+Helsinki,+Finland&output=embed&z=15"
                   allowFullScreen
                   className="rounded-lg"
                   loading="lazy"
