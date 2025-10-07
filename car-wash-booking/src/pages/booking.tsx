@@ -244,7 +244,7 @@ export default function Booking() {
                     {services.map((service) => (
                       <div
                         key={service.id}
-                        className={`relative p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 text-left w-full cursor-pointer ${
+                        className={`block p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 text-left cursor-pointer ${
                           selectedService === service.id
                             ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-300'
                             : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400 active:bg-purple-50'
@@ -255,22 +255,28 @@ export default function Booking() {
                           userSelect: 'none',
                           WebkitUserSelect: 'none',
                           MozUserSelect: 'none',
-                          msUserSelect: 'none'
+                          msUserSelect: 'none',
+                          minHeight: '100px',
+                          display: 'block',
+                          width: '100%'
                         }}
-                        onClick={() => setSelectedService(service.id)}
+                        onClick={() => {
+                          console.log('Service clicked:', service.id);
+                          setSelectedService(service.id);
+                        }}
                         onTouchStart={() => {}}
                         role="button"
                         tabIndex={0}
                         aria-pressed={selectedService === service.id}
                       >
-                        <div className="flex justify-between items-start mb-3">
-                          <h3 className="text-xl font-bold text-slate-900">{service.titleFi}</h3>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-slate-900">{formatPrice(service.priceCents)}</div>
-                            <div className="text-sm text-slate-600">{formatDuration(service.durationMinutes)}</div>
+                        <div className="flex justify-between items-start mb-3" style={{ pointerEvents: 'none' }}>
+                          <h3 className="text-xl font-bold text-slate-900" style={{ pointerEvents: 'none' }}>{service.titleFi}</h3>
+                          <div className="text-right" style={{ pointerEvents: 'none' }}>
+                            <div className="text-2xl font-bold text-slate-900" style={{ pointerEvents: 'none' }}>{formatPrice(service.priceCents)}</div>
+                            <div className="text-sm text-slate-600" style={{ pointerEvents: 'none' }}>{formatDuration(service.durationMinutes)}</div>
                           </div>
                         </div>
-                        <p className="text-slate-600 mb-4">{service.descriptionFi}</p>
+                        <p className="text-slate-600 mb-4" style={{ pointerEvents: 'none' }}>{service.descriptionFi}</p>
                       </div>
                     ))}
                   </div>
