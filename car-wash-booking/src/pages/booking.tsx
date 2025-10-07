@@ -251,20 +251,40 @@ export default function Booking() {
                         }`}
                         style={{
                           touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
+                          WebkitTapHighlightColor: 'rgba(168, 85, 247, 0.3)',
                           userSelect: 'none',
                           WebkitUserSelect: 'none',
                           MozUserSelect: 'none',
                           msUserSelect: 'none',
                           minHeight: '100px',
                           display: 'block',
-                          width: '100%'
+                          width: '100%',
+                          position: 'relative',
+                          zIndex: 1
                         }}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           console.log('Service clicked:', service.id);
                           setSelectedService(service.id);
                         }}
-                        onTouchStart={() => {}}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedService(service.id);
+                          }
+                        }}
+                        onTouchStart={(e) => {
+                          e.currentTarget.style.backgroundColor = selectedService === service.id ? '#faf5ff' : '#f8fafc';
+                        }}
+                        onTouchEnd={(e) => {
+                          setTimeout(() => {
+                            e.currentTarget.style.backgroundColor = selectedService === service.id ? '#faf5ff' : '';
+                          }, 150);
+                        }}
                         role="button"
                         tabIndex={0}
                         aria-pressed={selectedService === service.id}

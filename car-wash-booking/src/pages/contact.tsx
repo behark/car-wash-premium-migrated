@@ -113,7 +113,7 @@ export default function Contact() {
                   height="100%"
                   frameBorder="0"
                   style={{ border: 0 }}
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(siteConfig.address.mapsQuery)}&hl=fi&z=15&output=embed`}
+                  src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=fi&amp;q=L%C3%A4kkisep%C3%A4ntie%2015,%2000620%20Helsinki,%20Finland&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
                   allowFullScreen
                   className="rounded-lg"
                   loading="lazy"
