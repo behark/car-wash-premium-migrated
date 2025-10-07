@@ -166,7 +166,7 @@ const nextConfig = {
       "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com https://images.pexels.com https://kiiltoloisto.fi",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' https://api.stripe.com wss://* ws://localhost:*",
-      "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
+      "frame-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google.com https://maps.google.com https://maps.googleapis.com",
       "frame-ancestors 'none'",
       "form-action 'self'",
       "base-uri 'self'",
