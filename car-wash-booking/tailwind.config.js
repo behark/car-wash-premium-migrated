@@ -95,6 +95,9 @@ module.exports = {
       // Only include necessary box shadows
       boxShadow: {
         'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'glow-sm': '0 0 10px rgba(168, 85, 247, 0.4)',
+        'glow-md': '0 0 20px rgba(168, 85, 247, 0.5)',
+        'glow-lg': '0 0 30px rgba(168, 85, 247, 0.6)',
       },
     },
   },

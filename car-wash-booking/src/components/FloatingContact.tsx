@@ -80,16 +80,16 @@ export default function FloatingContact() {
       {/* Main Floating Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`group relative bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-navy-900 p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${isExpanded ? 'rotate-45' : ''}`}
+        className={`group relative bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-navy-900 p-5 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ring-4 ring-gold-400/30 hover:ring-gold-300/50 ${isExpanded ? 'rotate-45' : ''}`}
         aria-label="Ota yhteyttä"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
 
-        {/* Pulse Animation */}
-        <div className="absolute inset-0 bg-gold-400 rounded-full animate-ping opacity-30"></div>
-        <div className="absolute inset-0 bg-gold-400 rounded-full animate-pulse opacity-20"></div>
+        {/* Enhanced Pulse Animation */}
+        <div className="absolute inset-0 bg-gold-400 rounded-full animate-ping opacity-40"></div>
+        <div className="absolute inset-0 bg-gold-400 rounded-full animate-pulse opacity-25"></div>
       </button>
 
       {/* Tooltip for closed state */}

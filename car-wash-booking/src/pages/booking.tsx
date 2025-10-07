@@ -270,7 +270,7 @@ export default function Booking() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">Päivämäärä</label>
                         <input
                           type="date"
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           value={selectedDate}
                           onChange={(e) => setSelectedDate(e.target.value)}
                           min={new Date().toISOString().split('T')[0]}
@@ -278,12 +278,12 @@ export default function Booking() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Aika</label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {timeSlots.map((slot) => (
                             <button
                               key={slot.time}
                               disabled={!slot.available}
-                              className={`p-2 text-sm rounded-lg border transition-all ${
+                              className={`p-3 text-base rounded-lg border transition-all ${
                                 selectedTime === slot.time
                                   ? 'bg-amber-500 text-white border-amber-500'
                                   : slot.available
@@ -316,7 +316,7 @@ export default function Booking() {
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Ajoneuvon tyyppi *</label>
                         <select
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           value={vehicleType}
                           onChange={(e) => setVehicleType(e.target.value)}
                           required
@@ -331,7 +331,7 @@ export default function Booking() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">Rekisterinumero</label>
                         <input
                           type="text"
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           placeholder="ABC-123"
                           value={customerInfo.licensePlate}
                           onChange={(e) => setCustomerInfo({...customerInfo, licensePlate: e.target.value})}
@@ -342,7 +342,7 @@ export default function Booking() {
                         <input
                           type="text"
                           required
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           placeholder="Etunimi Sukunimi"
                           value={customerInfo.name}
                           onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
@@ -353,7 +353,7 @@ export default function Booking() {
                         <input
                           type="tel"
                           required
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           placeholder="+358 40 123 4567"
                           value={customerInfo.phone}
                           onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
@@ -364,7 +364,7 @@ export default function Booking() {
                         <input
                           type="email"
                           required
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           placeholder="etunimi.sukunimi@email.com"
                           value={customerInfo.email}
                           onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
@@ -373,7 +373,7 @@ export default function Booking() {
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-slate-700 mb-2">Lisätiedot</label>
                         <textarea
-                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base"
                           rows={3}
                           placeholder="Erityistoiveet tai lisätiedot autosta..."
                           value={customerInfo.notes}
@@ -389,16 +389,32 @@ export default function Booking() {
                 {/* Book Now Button */}
                 <div className="text-center">
                   <button
-                    className="group relative bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-4 px-12 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className="group relative bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold py-5 px-16 rounded-xl text-xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-glow-lg ring-2 ring-purple-400/50 hover:ring-purple-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:ring-0"
                     disabled={!selectedService || !selectedDate || !selectedTime || !vehicleType || !customerInfo.name || !customerInfo.email || !customerInfo.phone || loading}
                     onClick={handleBooking}
                   >
-                    <span className="relative z-10">
-                      {loading ? 'Käsitellään...' : 'Vahvista varaus'}
+                    <span className="relative z-10 flex items-center gap-2 justify-center">
+                      {loading ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Käsitellään...
+                        </>
+                      ) : (
+                        <>
+                          Vahvista varaus
+                          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </>
+                      )}
                     </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-500 rounded-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300 blur-sm"></div>
                   </button>
                   <p className="text-sm text-slate-600 mt-4">
-                    Saat vahvistuksen sähköpostilla ja tekstiviestillä
+                    ✅ Saat vahvistuksen sähköpostilla ja tekstiviestillä
                   </p>
                 </div>
               </div>
