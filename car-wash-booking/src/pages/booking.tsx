@@ -245,29 +245,27 @@ export default function Booking() {
                       <button
                         type="button"
                         key={service.id}
-                        className={`relative p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 text-left w-full touch-manipulation select-none ${
+                        className={`relative p-4 md:p-6 rounded-2xl border-2 transition-all duration-300 text-left w-full active:scale-[0.98] ${
                           selectedService === service.id
                             ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-300'
                             : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400 active:bg-purple-50'
                         }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedService(service.id);
+                        style={{
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                          userSelect: 'none'
                         }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          setSelectedService(service.id);
-                        }}
+                        onClick={() => setSelectedService(service.id)}
                       >
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start mb-3 pointer-events-none">
                           <h3 className="text-xl font-bold text-slate-900">{service.titleFi}</h3>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-slate-900">{formatPrice(service.priceCents)}</div>
                             <div className="text-sm text-slate-600">{formatDuration(service.durationMinutes)}</div>
                           </div>
                         </div>
-                        <p className="text-slate-600 mb-4">{service.descriptionFi}</p>
+                        <p className="text-slate-600 mb-4 pointer-events-none">{service.descriptionFi}</p>
                       </button>
                     ))}
                   </div>
