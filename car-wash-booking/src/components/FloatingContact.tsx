@@ -6,7 +6,7 @@ export default function FloatingContact() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-40">
       {/* Expanded Contact Menu */}
       <div className={`transition-all duration-300 transform ${isExpanded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
         <div className="bg-white rounded-2xl shadow-2xl p-4 mb-4 border border-gold-200 min-w-[280px]">

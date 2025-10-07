@@ -1,0 +1,1 @@
+SELECT id, "confirmationCode", "customerName", "customerEmail", "createdAt" FROM "Booking" ORDER BY "createdAt" DESC LIMIT 5;

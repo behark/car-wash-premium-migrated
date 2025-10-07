@@ -205,29 +205,32 @@ export default function Booking() {
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
               {/* Progress Steps */}
-              <div className="bg-slate-900 px-8 py-6">
-                <div className="flex items-center justify-between text-white">
+              <div className="bg-slate-900 px-4 md:px-8 py-6">
+                <div className="flex items-center justify-between text-white text-xs sm:text-sm md:text-base">
                   {/* Step 1 */}
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-slate-900 font-bold text-sm">1</div>
-                    <span className="font-medium">Valitse palvelu</span>
+                  <div className="flex items-center space-x-1 sm:space-x-2">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-amber-500 rounded-full flex items-center justify-center text-slate-900 font-bold text-xs sm:text-sm flex-shrink-0">1</div>
+                    <span className="font-medium hidden sm:inline">Valitse palvelu</span>
+                    <span className="font-medium sm:hidden">Palvelu</span>
                   </div>
                   <div className="hidden md:block w-16 h-0.5 bg-slate-600"></div>
                   {/* Step 2 */}
-                  <div className={`flex items-center space-x-2 ${selectedService && selectedDate ? '' : 'opacity-50'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${selectedService && selectedDate ? 'bg-amber-500 text-slate-900' : 'bg-slate-600 text-white'}`}>2</div>
-                    <span className="font-medium">Aika & päivä</span>
+                  <div className={`flex items-center space-x-1 sm:space-x-2 ${selectedService && selectedDate ? '' : 'opacity-50'}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 ${selectedService && selectedDate ? 'bg-amber-500 text-slate-900' : 'bg-slate-600 text-white'}`}>2</div>
+                    <span className="font-medium hidden sm:inline">Aika & päivä</span>
+                    <span className="font-medium sm:hidden">Aika</span>
                   </div>
                   <div className="hidden md:block w-16 h-0.5 bg-slate-600"></div>
                    {/* Step 3 */}
-                  <div className={`flex items-center space-x-2 ${selectedService && selectedDate && selectedTime ? '' : 'opacity-50'}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${selectedService && selectedDate && selectedTime ? 'bg-amber-500 text-slate-900' : 'bg-slate-600 text-white'}`}>3</div>
-                    <span className="font-medium">Yhteystiedot</span>
+                  <div className={`flex items-center space-x-1 sm:space-x-2 ${selectedService && selectedDate && selectedTime ? '' : 'opacity-50'}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 ${selectedService && selectedDate && selectedTime ? 'bg-amber-500 text-slate-900' : 'bg-slate-600 text-white'}`}>3</div>
+                    <span className="font-medium hidden sm:inline">Yhteystiedot</span>
+                    <span className="font-medium sm:hidden">Tiedot</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8">
+              <div className="p-4 sm:p-6 md:p-8">
                 {error && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
                     {error}
@@ -235,16 +238,17 @@ export default function Booking() {
                 )}
 
                 {/* Service Selection */}
-                <div className="mb-12">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-6">Valitse palvelu</h2>
-                  <div className="grid md:grid-cols-2 gap-6">
+                <div className="mb-8 md:mb-12">
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 md:mb-6">Valitse palvelu</h2>
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                     {services.map((service) => (
-                      <div
+                      <button
+                        type="button"
                         key={service.id}
-                        className={`relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+                        className={`relative p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 text-left w-full touch-manipulation ${
                           selectedService === service.id
-                            ? 'border-amber-500 bg-amber-50 shadow-lg'
-                            : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                            ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-300'
+                            : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400'
                         }`}
                         onClick={() => setSelectedService(service.id)}
                       >
@@ -256,7 +260,7 @@ export default function Booking() {
                           </div>
                         </div>
                         <p className="text-slate-600 mb-4">{service.descriptionFi}</p>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
