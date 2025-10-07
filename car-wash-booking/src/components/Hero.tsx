@@ -29,7 +29,7 @@ export default function Hero() {
             📞 {siteConfig.phone.display}
           </div>
           <div className="bg-white/10 backdrop-blur-lg shadow-2xl border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium animate-fade-in animation-delay-1000 hover:scale-105 transition-all duration-300">
-            🕒 MA-PE 8-17, LA 10-16
+            🕒 {siteConfig.hours[0].label}: {siteConfig.hours[0].value}, {siteConfig.hours[1].label}: {siteConfig.hours[1].value}
           </div>
         </div>
       </div>
@@ -98,9 +98,9 @@ export default function Hero() {
             <div className="text-sm text-silver-300">Vuotta kokemusta</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold text-purple-400">MA-PE 8-17</div>
+            <div className="text-lg font-bold text-purple-400">{siteConfig.hours[0].label} {siteConfig.hours[0].value}</div>
             <div className="text-sm text-silver-300">📅 Aukioloajat</div>
-            <div className="text-xs text-silver-400">LA 10-16</div>
+            <div className="text-xs text-silver-400">{siteConfig.hours[1].label} {siteConfig.hours[1].value}</div>
           </div>
         </div>
       </div>

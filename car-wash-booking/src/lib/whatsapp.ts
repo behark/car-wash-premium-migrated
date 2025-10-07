@@ -121,7 +121,7 @@ Varauksesi on vahvistettu:
 • *Vahvistuskoodi:* ${confirmationCode}${loyaltySection}
 
 📍 *Autopesu Kiilto & Loisto*
-Läkkiseränttie 15, Helsinki
+Läkkisepäntie 15, 00620 Helsinki
 📞 044 960 8148
 🕒 MA-PE 08:00-18:00, LA 10:00-16:00
 
@@ -143,7 +143,7 @@ Muistutus varauksestasi huomenna:
 • *Aika:* ${date} klo ${time}
 
 📍 Autopesu Kiilto & Loisto
-Läkkiseränttie 15, Helsinki
+Läkkisepäntie 15, 00620 Helsinki
 
 Jos tarvitset muutoksia, soita: 044 960 8148`;
 }

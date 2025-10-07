@@ -245,12 +245,20 @@ export default function Booking() {
                       <button
                         type="button"
                         key={service.id}
-                        className={`relative p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 text-left w-full touch-manipulation ${
+                        className={`relative p-4 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 text-left w-full touch-manipulation select-none ${
                           selectedService === service.id
                             ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-300'
-                            : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400'
+                            : 'border-slate-200 hover:border-slate-300 hover:shadow-md active:border-purple-400 active:bg-purple-50'
                         }`}
-                        onClick={() => setSelectedService(service.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedService(service.id);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          setSelectedService(service.id);
+                        }}
                       >
                         <div className="flex justify-between items-start mb-3">
                           <h3 className="text-xl font-bold text-slate-900">{service.titleFi}</h3>

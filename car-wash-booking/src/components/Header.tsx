@@ -92,8 +92,8 @@ export default function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <nav className="py-4 space-y-2 border-t border-silver-600/30">
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${isMobileMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <nav className="py-4 space-y-2 border-t border-silver-600/30 overflow-y-auto">
             <Link href="/services" className="block px-4 py-3 text-silver-200 hover:bg-gold-500/10 hover:text-gold-400 rounded-lg transition-colors">
               Palvelut
             </Link>

@@ -65,7 +65,7 @@ export default function BookingSuccess() {
                     <div className="w-6 h-6 bg-gold-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">2</div>
                     <div>
                       <p className="font-medium text-navy-700">Valmistautuminen</p>
-                      <p className="text-sm text-silver-600">Saavu osoitteeseen Läkkiseränttie 15, Helsinki sovittuna aikana.</p>
+                      <p className="text-sm text-silver-600">Saavu osoitteeseen Läkkisepäntie 15, 00620 Helsinki sovittuna aikana.</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
