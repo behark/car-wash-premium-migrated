@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Generator for Kiilto & Loisto</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <h1>QR Code for Kiilto & Loisto Booking</h1>
+    <canvas id="qrcode"></canvas>
+    <p><strong>URL:</strong> https://kiiltoloisto-fi.onrender.com/booking</p>
+
+    <script>
+        const canvas = document.getElementById('qrcode');
+        QRCode.toCanvas(canvas, 'https://kiiltoloisto-fi.onrender.com/booking', {
+            width: 300,
+            color: {
+                dark: '#1e3a8a',  // Navy blue
+                light: '#ffffff'  // White
+            }
+        });
+    </script>
+</body>
+</html>

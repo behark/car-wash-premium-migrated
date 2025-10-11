@@ -1,0 +1,22 @@
+{
+  "name": "netlify-functions",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "cd ../.. && npx prisma generate"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^2.0.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "@sendgrid/mail": "^7.4.0",
+    "bcrypt": "^5.1.1",
+    "date-fns": "^4.1.0",
+    "nanoid": "^5.1.6",
+    "prisma": "^5.10.0",
+    "stripe": "^19.0.0",
+    "zod": "^3.25.76"
+  }
+}
