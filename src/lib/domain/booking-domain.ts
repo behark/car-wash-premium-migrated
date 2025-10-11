@@ -6,14 +6,6 @@
 import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { addMinutes, format, differenceInHours } from 'date-fns';
 import { logger } from '../logger';
-import {
-  BusinessError,
-  TimeSlotUnavailableError,
-  CancellationDeadlinePassedError,
-  InvalidBookingStatusTransitionError,
-  PaymentRequiredError,
-  BookingNotFoundError,
-} from '../errors/index';
 
 export interface BookingDomainModel {
   id?: number;
