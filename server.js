@@ -8,7 +8,7 @@ const { parse } = require('url');
 const next = require('next');
 
 const dev = process.env.NODE_ENV !== 'production';
-const hostname = process.env.HOSTNAME || 'localhost';
+const hostname = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
 const port = parseInt(process.env.PORT || '3000', 10);
 
 const app = next({ dev, hostname, port });
@@ -26,22 +26,9 @@ app.prepare().then(() => {
     }
   });
 
-  // Initialize Socket.IO for real-time features
+  // Initialize Socket.IO for real-time features (disabled for initial deployment)
   let io = null;
-  try {
-    // Use dynamic import for ES modules in production
-    const socketModule = process.env.NODE_ENV === 'production'
-      ? require('./src/lib/websocket-server.js')  // Compiled JS file
-      : require('./src/lib/websocket-server.ts'); // TS file in dev
-
-    const { initializeWebSocketServer } = socketModule;
-    io = initializeWebSocketServer(server);
-    console.log('✅ Socket.IO initialized for real-time features');
-  } catch (error) {
-    console.log('⚠️  Socket.IO not available, real-time features disabled');
-    console.log('Error:', error.message);
-    // Continue without WebSocket - app will still work
-  }
+  console.log('⚠️  Socket.IO temporarily disabled for deployment troubleshooting');
 
   // Graceful shutdown handling
   const gracefulShutdown = () => {

@@ -13,10 +13,7 @@ services:
       npm ci --include=dev &&
       npx prisma generate &&
       DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" npm run build
-    startCommand: |
-      npx prisma migrate deploy &&
-      npx prisma db seed &&
-      npm start
+    startCommand: npm start
     healthCheckPath: /api/health
     dockerfilePath: ./Dockerfile
     envVars:
