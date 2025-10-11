@@ -267,7 +267,7 @@ export class BookingDomain {
    */
   findOptimalTimeSlot(
     preferredDateTime: Date,
-    serviceDuration: number,
+    _serviceDuration: number,
     availableSlots: Array<{ startTime: Date; capacity: number }>,
     constraints: {
       preferMorning?: boolean;
