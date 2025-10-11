@@ -242,7 +242,7 @@ function calculateSlotDuration(startTime: string, endTime: string): number {
 async function addConflictDetection(
   slots: any[],
   date: Date,
-  serviceId?: number
+  _serviceId?: number // Prefixed with _ to indicate intentionally unused
 ) {
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
