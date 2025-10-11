@@ -330,7 +330,7 @@ export class DatabaseBackupService {
       const validStatements = parseInt(stdout.trim());
       return validStatements > 0;
     } catch (error) {
-      logger.error('Backup verification failed', error);
+      logger.error('Backup verification failed', { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
   }
@@ -428,7 +428,7 @@ export class DatabaseBackupService {
         }
       }
     } catch (error) {
-      logger.error('Failed to cleanup old backups', error);
+      logger.error('Failed to cleanup old backups', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 

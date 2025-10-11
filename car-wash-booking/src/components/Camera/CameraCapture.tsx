@@ -10,7 +10,7 @@ interface CameraCaptureProps {
   className?: string;
 }
 
-export default function CameraCapture({ onPhotoTaken, className }: CameraCaptureProps) {
+export default function CameraCapture({ onPhotoTaken: _onPhotoTaken, className }: CameraCaptureProps) {
   return (
     <div className={`bg-gray-100 rounded-xl p-8 text-center ${className}`}>
       <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">

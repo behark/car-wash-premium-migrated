@@ -90,7 +90,7 @@ async function getCachedOrFetch<T>(
 
     return data;
   } catch (error) {
-    logger.error('Cache error, falling back to database', error);
+    logger.error('Cache error, falling back to database', { error: error instanceof Error ? error.message : String(error) });
     return fetchFn();
   }
 }
@@ -108,7 +108,7 @@ async function invalidateCache(pattern: string): Promise<void> {
       logger.debug(`Invalidated ${keys.length} cache keys matching: ${pattern}`);
     }
   } catch (error) {
-    logger.error('Cache invalidation error', error);
+    logger.error('Cache invalidation error', { error: error instanceof Error ? error.message : String(error) });
   }
 }
 
@@ -132,7 +132,7 @@ export async function checkAvailability(date: Date, serviceId: number): Promise<
       }));
     } catch (error) {
       // Fallback to application-level logic if function doesn't exist
-      logger.warn('Database function not available, using fallback', error);
+      logger.warn('Database function not available, using fallback', { error: error instanceof Error ? error.message : String(error) });
       return checkAvailabilityFallback(date, serviceId);
     }
   });
@@ -544,7 +544,7 @@ export async function getDailyStats(date: Date) {
         };
       }
     } catch (error) {
-      logger.warn('Materialized view not available, using fallback', error);
+      logger.warn('Materialized view not available, using fallback', { error: error instanceof Error ? error.message : String(error) });
     }
 
     // Fallback to regular aggregation
@@ -689,7 +689,7 @@ export async function cleanupCache() {
 
     logger.info(`Cache cleanup completed, ${cleaned} keys updated`);
   } catch (error) {
-    logger.error('Cache cleanup error', error);
+    logger.error('Cache cleanup error', { error: error instanceof Error ? error.message : String(error) });
   }
 }
 

@@ -3,7 +3,7 @@
  * Advanced caching with connection pooling, clustering, and monitoring
  */
 
-import IORedis, { Redis, Cluster, ClusterOptions, RedisOptions } from 'ioredis';
+import IORedis, { Redis, Cluster, ClusterOptions } from 'ioredis';
 import { logger } from '../logger';
 
 export interface CacheMetrics {
@@ -92,10 +92,8 @@ class RedisClientManager {
             enableReadyCheck: false,
             retryDelayOnFailover: 100,
             retryDelayOnClusterDown: 300,
-            retryDelayOnReconnect: 100,
             slotsRefreshTimeout: 10000,
             slotsRefreshInterval: 5000,
-            maxRetriesPerRequest: 3,
             ...this.config.cluster.options,
           }
         );
@@ -107,7 +105,6 @@ class RedisClientManager {
           this.client = new IORedis(redisUrl, {
             enableReadyCheck: true,
             retryDelayOnFailover: 100,
-            retryDelayOnReconnect: 100,
             maxRetriesPerRequest: 3,
             lazyConnect: true,
             connectTimeout: 10000,
@@ -123,7 +120,6 @@ class RedisClientManager {
             keyPrefix: this.config.redis?.keyPrefix || 'carwash:',
             enableReadyCheck: true,
             retryDelayOnFailover: 100,
-            retryDelayOnReconnect: 100,
             maxRetriesPerRequest: 3,
             lazyConnect: true,
             connectTimeout: 10000,
@@ -695,4 +691,4 @@ if (typeof process !== 'undefined' && process.on) {
   }
 }
 
-export { RedisClientManager, type CacheConfig, type CacheMetrics };
+export { RedisClientManager };

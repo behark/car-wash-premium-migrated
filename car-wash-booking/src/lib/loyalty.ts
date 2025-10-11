@@ -4,7 +4,7 @@ import { prisma } from './prisma-simple';
 export const LOYALTY_TIERS = {
   BRONZE: { name: 'Bronze', minPoints: 0, discount: 0, color: '#CD7F32' },
   SILVER: { name: 'Silver', minPoints: 150, discount: 0.05, color: '#C0C0C0' },
-  GOLD: { name: 'Gold', minPoints: 300, discount: 0.10, color: '#FFD700' },
+  GOLD: { name: 'Gold', minPoints: 300, discount: 0.1, color: '#FFD700' },
   PLATINUM: { name: 'Platinum', minPoints: 600, discount: 0.15, color: '#E5E4E2' },
 } as const;
 
@@ -38,11 +38,7 @@ export function calculateTier(points: number): LoyaltyTier {
 /**
  * Get or create customer record
  */
-export async function getOrCreateCustomer(
-  name: string,
-  email: string,
-  phone?: string
-) {
+export async function getOrCreateCustomer(name: string, email: string, phone?: string) {
   let customer = await prisma.customer.findUnique({
     where: { email },
   });
@@ -94,7 +90,12 @@ export async function awardLoyaltyPoints(
     console.log(`🎉 Customer ${customerId} promoted to ${newTier} tier!`);
   }
 
-  return getLoyaltyStatus(updatedCustomer.loyaltyPoints, newTier, updatedCustomer.totalSpent, updatedCustomer.visitCount);
+  return getLoyaltyStatus(
+    updatedCustomer.loyaltyPoints,
+    newTier,
+    updatedCustomer.totalSpent,
+    updatedCustomer.visitCount
+  );
 }
 
 /**
@@ -115,7 +116,7 @@ export function getLoyaltyStatus(
   const currentTierIndex = tiers.findIndex(([key]) => key === currentTier);
 
   if (currentTierIndex < tiers.length - 1) {
-    const [nextTierKey, nextTierInfo] = tiers[currentTierIndex + 1];
+    const [_nextTierKey, nextTierInfo] = tiers[currentTierIndex + 1];
     nextTier = {
       name: nextTierInfo.name,
       pointsNeeded: nextTierInfo.minPoints - points,

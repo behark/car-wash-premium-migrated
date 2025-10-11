@@ -3,7 +3,6 @@
  * Enterprise-grade index optimization and management
  */
 
-import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
 import { executeDbRead } from '../prisma';
 
@@ -88,7 +87,7 @@ export class IndexAnalyzer {
         summary,
       };
     } catch (error) {
-      logger.error('Index analysis failed', error);
+      logger.error('Index analysis failed', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -211,7 +210,7 @@ export class IndexAnalyzer {
   async validateIndex(
     table: string,
     columns: string[],
-    type: string = 'btree'
+    _type: string = 'btree'
   ): Promise<{
     valid: boolean;
     issues: string[];
@@ -449,7 +448,7 @@ export class IndexAnalyzer {
     });
 
     // Find duplicates within each table
-    for (const [table, indexes] of indexesByTable) {
+    for (const [_table, indexes] of indexesByTable) {
       for (let i = 0; i < indexes.length; i++) {
         for (let j = i + 1; j < indexes.length; j++) {
           const idx1 = indexes[i];
@@ -477,44 +476,6 @@ export class IndexAnalyzer {
     return duplicates;
   }
 
-  private async getIndexUsageStats(): Promise<Array<{
-    table: string;
-    index: string;
-    scans: number;
-    tuples: number;
-  }>> {
-    return executeDbRead(
-      async (client) => {
-        try {
-          const stats = await client.$queryRaw<Array<{
-            tablename: string;
-            indexname: string;
-            idx_scan: number;
-            idx_tup_read: number;
-          }>>`
-            SELECT
-              tablename,
-              indexname,
-              idx_scan,
-              idx_tup_read
-            FROM pg_stat_user_indexes
-            ORDER BY tablename, indexname
-          `;
-
-          return stats.map(stat => ({
-            table: stat.tablename,
-            index: stat.indexname,
-            scans: Number(stat.idx_scan),
-            tuples: Number(stat.idx_tup_read),
-          }));
-        } catch (error) {
-          logger.warn('Could not fetch index usage statistics', { error });
-          return [];
-        }
-      },
-      'get_index_usage_stats'
-    );
-  }
 
   private async tableExists(tableName: string): Promise<boolean> {
     return executeDbRead(

@@ -655,8 +655,10 @@ export function createMonitoredPrismaClient(): PrismaClient {
   return client;
 }
 
-// Import getCurrentRequestContext for use in monitoring
-import { getCurrentRequestContext } from '../logging/correlation-middleware';
+// Simple stub for getCurrentRequestContext - can be enhanced later
+function getCurrentRequestContext(): { correlationId?: string; userId?: string } | undefined {
+  return undefined;
+}
 
 // Export singleton instance
 export const queryMonitor = QueryMonitor.getInstance();

@@ -397,9 +397,9 @@ export function createBookingSaga(
     steps: [
       {
         name: 'validate_availability',
-        execute: async (tx, context) => {
+        execute: async (_tx, _context) => {
           // Check if time slot is still available
-          const overlapping = await tx.booking.findFirst({
+          const overlapping = await _tx.booking.findFirst({
             where: {
               date: bookingData.date,
               startTime: bookingData.startTime,
@@ -417,8 +417,8 @@ export function createBookingSaga(
       },
       {
         name: 'create_booking',
-        execute: async (tx, context) => {
-          const booking = await tx.booking.create({
+        execute: async (_tx, _context) => {
+          const booking = await _tx.booking.create({
             data: {
               ...bookingData,
               status: 'PENDING',
@@ -428,9 +428,9 @@ export function createBookingSaga(
 
           return booking;
         },
-        compensate: async (tx, context, booking) => {
+        compensate: async (_tx, _context, booking) => {
           if (booking) {
-            await tx.booking.update({
+            await _tx.booking.update({
               where: { id: booking.id },
               data: { status: 'CANCELLED' },
             });
@@ -439,15 +439,15 @@ export function createBookingSaga(
       },
       {
         name: 'process_payment',
-        execute: async (tx, context) => {
-          const booking = context.stepResults.create_booking;
+        execute: async (_tx, _context) => {
+          const booking = _context.stepResults.create_booking;
 
           // Simulate payment processing
           // In real implementation, this would call Stripe API
           const paymentIntent = await processPayment(paymentData, booking.priceCents);
 
           // Update booking with payment info
-          await tx.booking.update({
+          await _tx.booking.update({
             where: { id: booking.id },
             data: {
               paymentIntentId: paymentIntent.id,
@@ -458,7 +458,7 @@ export function createBookingSaga(
 
           return paymentIntent;
         },
-        compensate: async (tx, context, paymentIntent) => {
+        compensate: async (_tx, _context, paymentIntent) => {
           if (paymentIntent) {
             // Refund payment
             await refundPayment(paymentIntent.id);
@@ -468,17 +468,17 @@ export function createBookingSaga(
       },
       {
         name: 'send_confirmation',
-        execute: async (tx, context) => {
-          const booking = context.stepResults.create_booking;
+        execute: async (_tx, _context) => {
+          const booking = _context.stepResults.create_booking;
 
           // Send confirmation email
           await sendBookingConfirmation(booking);
 
           return { sent: true };
         },
-        compensate: async (tx, context) => {
+        compensate: async (_tx, _context) => {
           // Send cancellation email
-          const booking = context.stepResults.create_booking;
+          const booking = _context.stepResults.create_booking;
           if (booking) {
             await sendBookingCancellation(booking);
           }
@@ -491,7 +491,7 @@ export function createBookingSaga(
 }
 
 // Mock functions for the saga example
-async function processPayment(paymentData: any, amount: number): Promise<{ id: string }> {
+async function processPayment(_paymentData: any, _amount: number): Promise<{ id: string }> {
   // Mock payment processing
   return { id: `pi_${Date.now()}` };
 }

@@ -4,16 +4,8 @@
  */
 
 import { BookingStatus, PaymentStatus } from '@prisma/client';
-import { addMinutes, parseISO, format, differenceInHours } from 'date-fns';
+import { addMinutes, format, differenceInHours } from 'date-fns';
 import { logger } from '../logger';
-import {
-  BusinessError,
-  TimeSlotUnavailableError,
-  CancellationDeadlinePassedError,
-  InvalidBookingStatusTransitionError,
-  PaymentRequiredError,
-  BookingNotFoundError,
-} from '../errors/index';
 
 export interface BookingDomainModel {
   id?: number;
@@ -186,7 +178,11 @@ export class BookingDomain {
     totalPriceCents: number;
     breakdown: Array<{ item: string; amount: number; type: 'base' | 'multiplier' | 'surcharge' }>;
   } {
-    const breakdown: Array<{ item: string; amount: number; type: 'base' | 'multiplier' | 'surcharge' }> = [];
+    const breakdown: Array<{
+      item: string;
+      amount: number;
+      type: 'base' | 'multiplier' | 'surcharge';
+    }> = [];
 
     // Base price
     let totalCents = basePrice;
@@ -238,11 +234,11 @@ export class BookingDomain {
 
     // Special requests surcharge
     const specialRequestCharges: Record<string, number> = {
-      'interior_cleaning': 1000, // €10
-      'wax_treatment': 1500,     // €15
-      'engine_cleaning': 2000,   // €20
-      'tire_treatment': 500,     // €5
-      'express_service': 1000,   // €10
+      interior_cleaning: 1000, // €10
+      wax_treatment: 1500, // €15
+      engine_cleaning: 2000, // €20
+      tire_treatment: 500, // €5
+      express_service: 1000, // €10
     };
 
     let specialRequestsTotal = 0;
@@ -275,7 +271,7 @@ export class BookingDomain {
    */
   findOptimalTimeSlot(
     preferredDateTime: Date,
-    serviceDuration: number,
+    _serviceDuration: number,
     availableSlots: Array<{ startTime: Date; capacity: number }>,
     constraints: {
       preferMorning?: boolean;
@@ -298,11 +294,7 @@ export class BookingDomain {
     }> = [];
 
     for (const slot of availableSlots) {
-      const score = this.calculateTimeSlotScore(
-        slot.startTime,
-        preferredDateTime,
-        constraints
-      );
+      const score = this.calculateTimeSlotScore(slot.startTime, preferredDateTime, constraints);
 
       alternatives.push({
         startTime: slot.startTime,
@@ -353,10 +345,7 @@ export class BookingDomain {
 
     // Check cancellation deadline for customer-initiated cancellations
     if (cancellationRequest.initiatedBy === 'customer') {
-      const hoursUntilBooking = differenceInHours(
-        booking.scheduledDateTime,
-        new Date()
-      );
+      const hoursUntilBooking = differenceInHours(booking.scheduledDateTime, new Date());
 
       if (hoursUntilBooking < this.businessRules.cancellationDeadlineHours) {
         errors.push(
@@ -370,10 +359,7 @@ export class BookingDomain {
     let refundAmount = 0;
 
     if (booking.paymentStatus === PaymentStatus.PAID) {
-      const hoursUntilBooking = differenceInHours(
-        booking.scheduledDateTime,
-        new Date()
-      );
+      const hoursUntilBooking = differenceInHours(booking.scheduledDateTime, new Date());
 
       if (hoursUntilBooking >= 48) {
         // Full refund if more than 48 hours
@@ -405,7 +391,7 @@ export class BookingDomain {
    * Generate booking workflow steps
    */
   generateBookingWorkflow(
-    booking: BookingDomainModel,
+    _booking: BookingDomainModel,
     options: {
       requirePayment?: boolean;
       autoAssignResources?: boolean;
@@ -492,11 +478,12 @@ export class BookingDomain {
     totalSlots: number;
     recommendations: string[];
   } {
-    const dayBookings = existingBookings.filter(booking =>
-      booking.serviceId === serviceId &&
-      booking.scheduledDateTime.toDateString() === date.toDateString() &&
-      booking.status !== BookingStatus.CANCELLED &&
-      booking.status !== BookingStatus.NO_SHOW
+    const dayBookings = existingBookings.filter(
+      booking =>
+        booking.serviceId === serviceId &&
+        booking.scheduledDateTime.toDateString() === date.toDateString() &&
+        booking.status !== BookingStatus.CANCELLED &&
+        booking.status !== BookingStatus.NO_SHOW
     );
 
     // Calculate hourly utilization
@@ -518,13 +505,14 @@ export class BookingDomain {
       for (let hour = startHour; hour <= endHour; hour++) {
         const hourKey = hour.toString().padStart(2, '0') + ':00';
         const current = hourlyUtilization.get(hourKey) || 0;
-        hourlyUtilization.set(hourKey, current + (1 / serviceCapacity));
+        hourlyUtilization.set(hourKey, current + 1 / serviceCapacity);
       }
     });
 
     // Calculate metrics
     const utilizationValues = Array.from(hourlyUtilization.values());
-    const averageUtilization = utilizationValues.reduce((a, b) => a + b, 0) / utilizationValues.length;
+    const averageUtilization =
+      utilizationValues.reduce((a, b) => a + b, 0) / utilizationValues.length;
 
     const peakHours = Array.from(hourlyUtilization.entries())
       .filter(([_, utilization]) => utilization > 0.8)
@@ -643,7 +631,8 @@ export class BookingDomain {
       },
       cancellationPolicy: {
         deadline: cancellationDeadline,
-        refundPolicy: 'Full refund available up to 48 hours before appointment. 50% refund 24-48 hours before.',
+        refundPolicy:
+          'Full refund available up to 48 hours before appointment. 50% refund 24-48 hours before.',
       },
     };
   }
@@ -769,11 +758,12 @@ export class BookingDomain {
     const warnings: string[] = [];
 
     const sameDay = scheduledDateTime.toDateString();
-    const customerBookingsToday = existingBookings.filter(booking =>
-      booking.customer.email === customerEmail &&
-      booking.scheduledDateTime.toDateString() === sameDay &&
-      booking.status !== BookingStatus.CANCELLED &&
-      booking.status !== BookingStatus.NO_SHOW
+    const customerBookingsToday = existingBookings.filter(
+      booking =>
+        booking.customer.email === customerEmail &&
+        booking.scheduledDateTime.toDateString() === sameDay &&
+        booking.status !== BookingStatus.CANCELLED &&
+        booking.status !== BookingStatus.NO_SHOW
     );
 
     if (customerBookingsToday.length >= this.businessRules.maxBookingsPerCustomerPerDay) {
@@ -794,7 +784,7 @@ export class BookingDomain {
 
   private generateAlternativeSuggestions(
     booking: Partial<BookingDomainModel>,
-    existingBookings: BookingDomainModel[]
+    _existingBookings: BookingDomainModel[]
   ): string[] {
     const suggestions: string[] = [];
 
@@ -812,7 +802,9 @@ export class BookingDomain {
       const laterTime = new Date(booking.scheduledDateTime);
       laterTime.setHours(laterTime.getHours() + 2);
 
-      suggestions.push(`Try ${format(earlierTime, 'HH:mm')} or ${format(laterTime, 'HH:mm')} on the same day`);
+      suggestions.push(
+        `Try ${format(earlierTime, 'HH:mm')} or ${format(laterTime, 'HH:mm')} on the same day`
+      );
 
       // Service-specific suggestions
       if (booking.vehicleType === 'truck' || booking.vehicleType === 'van') {

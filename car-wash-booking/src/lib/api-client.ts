@@ -134,7 +134,9 @@ export class EmailService {
 
       await prisma.$disconnect();
     } catch (dbError) {
-      logger.error('Failed to queue email in database', dbError);
+      logger.error('Failed to queue email in database', {
+        error: dbError instanceof Error ? dbError.message : String(dbError)
+      });
     }
 
     logger.warn('Email queued for manual processing', {
@@ -265,7 +267,9 @@ export class SMSService {
 
       await prisma.$disconnect();
     } catch (dbError) {
-      logger.error('Failed to queue SMS in database', dbError);
+      logger.error('Failed to queue SMS in database', {
+        error: dbError instanceof Error ? dbError.message : String(dbError)
+      });
     }
 
     return {

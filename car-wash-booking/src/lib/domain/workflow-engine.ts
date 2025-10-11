@@ -64,7 +64,13 @@ export interface WorkflowEvent {
   id: string;
   workflowInstanceId: string;
   stepId: string;
-  type: 'step_started' | 'step_completed' | 'step_failed' | 'step_skipped' | 'workflow_paused' | 'workflow_resumed';
+  type:
+    | 'step_started'
+    | 'step_completed'
+    | 'step_failed'
+    | 'step_skipped'
+    | 'workflow_paused'
+    | 'workflow_resumed';
   timestamp: Date;
   duration?: number;
   result?: any;
@@ -127,16 +133,10 @@ export class WorkflowEngine {
   /**
    * Start a workflow instance
    */
-  async startWorkflow(
-    workflowId: string,
-    context: WorkflowContext
-  ): Promise<WorkflowInstance> {
+  async startWorkflow(workflowId: string, context: WorkflowContext): Promise<WorkflowInstance> {
     const definition = this.workflows.get(workflowId);
     if (!definition) {
-      throw new BusinessError(
-        `Workflow not found: ${workflowId}`,
-        'WORKFLOW_NOT_FOUND'
-      );
+      throw new BusinessError(`Workflow not found: ${workflowId}`, 'WORKFLOW_NOT_FOUND');
     }
 
     const instance: WorkflowInstance = {
@@ -177,7 +177,10 @@ export class WorkflowEngine {
 
     const definition = this.workflows.get(instance.workflowId);
     if (!definition) {
-      throw new BusinessError(`Workflow definition not found: ${instance.workflowId}`, 'WORKFLOW_NOT_FOUND');
+      throw new BusinessError(
+        `Workflow definition not found: ${instance.workflowId}`,
+        'WORKFLOW_NOT_FOUND'
+      );
     }
 
     instance.status = 'running';
@@ -186,10 +189,7 @@ export class WorkflowEngine {
       while (instance.status === 'running' && instance.currentStep) {
         const step = definition.steps.get(instance.currentStep);
         if (!step) {
-          throw new BusinessError(
-            `Step not found: ${instance.currentStep}`,
-            'STEP_NOT_FOUND'
-          );
+          throw new BusinessError(`Step not found: ${instance.currentStep}`, 'STEP_NOT_FOUND');
         }
 
         const stepResult = await this.executeStep(instance, step, definition);
@@ -231,7 +231,9 @@ export class WorkflowEngine {
       this.emitEvent('workflow_completed', {
         instanceId,
         status: instance.status,
-        duration: instance.endTime ? instance.endTime.getTime() - instance.startTime.getTime() : undefined,
+        duration: instance.endTime
+          ? instance.endTime.getTime() - instance.startTime.getTime()
+          : undefined,
       });
 
       return instance;
@@ -245,7 +247,8 @@ export class WorkflowEngine {
         retryable: false,
       };
 
-      logger.error('Workflow execution failed', error, {
+      logger.error('Workflow execution failed', {
+        error,
         instanceId,
         workflowId: instance.workflowId,
         currentStep: instance.currentStep,
@@ -337,7 +340,7 @@ export class WorkflowEngine {
   private async executeStep(
     instance: WorkflowInstance,
     step: WorkflowStep,
-    definition: WorkflowDefinition
+    _definition: WorkflowDefinition
   ): Promise<{ success: boolean; result?: any; error?: WorkflowError }> {
     const startTime = Date.now();
 
@@ -415,7 +418,7 @@ export class WorkflowEngine {
     });
 
     // Approval step handler
-    this.stepHandlers.set('approval', async (step: WorkflowStep, context: WorkflowContext) => {
+    this.stepHandlers.set('approval', async (_step: WorkflowStep, _context: WorkflowContext) => {
       // In production, this would integrate with approval systems
       return { approved: true, approver: 'system' };
     });
@@ -435,7 +438,7 @@ export class WorkflowEngine {
     });
 
     // Delay step handler
-    this.stepHandlers.set('delay', async (step: WorkflowStep, context: WorkflowContext) => {
+    this.stepHandlers.set('delay', async (step: WorkflowStep, _context: WorkflowContext) => {
       const { delayMs } = step.config;
 
       await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -521,7 +524,7 @@ export class WorkflowEngine {
       try {
         listener(data);
       } catch (error) {
-        logger.error('Event listener error', error, { eventType });
+        logger.error('Event listener error', { error, eventType });
       }
     });
   }
@@ -577,22 +580,21 @@ export class WorkflowEngine {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     const allInstances = Array.from(this.instances.values());
-    const todayInstances = allInstances.filter(
-      instance => instance.startTime >= todayStart
-    );
+    const todayInstances = allInstances.filter(instance => instance.startTime >= todayStart);
 
     const completedInstances = todayInstances.filter(
       instance => instance.status === 'completed' && instance.endTime
     );
 
-    const failedInstances = todayInstances.filter(
-      instance => instance.status === 'failed'
-    );
+    const failedInstances = todayInstances.filter(instance => instance.status === 'failed');
 
-    const avgExecutionTime = completedInstances.length > 0 ?
-      completedInstances.reduce((sum, instance) =>
-        sum + (instance.endTime!.getTime() - instance.startTime.getTime()), 0
-      ) / completedInstances.length : 0;
+    const avgExecutionTime =
+      completedInstances.length > 0
+        ? completedInstances.reduce(
+            (sum, instance) => sum + (instance.endTime!.getTime() - instance.startTime.getTime()),
+            0
+          ) / completedInstances.length
+        : 0;
 
     const failureReasons = new Map<string, number>();
     failedInstances.forEach(instance => {
@@ -609,7 +611,8 @@ export class WorkflowEngine {
 
     return {
       totalWorkflows: this.workflows.size,
-      activeInstances: allInstances.filter(i => i.status === 'running' || i.status === 'paused').length,
+      activeInstances: allInstances.filter(i => i.status === 'running' || i.status === 'paused')
+        .length,
       completedToday: completedInstances.length,
       failedToday: failedInstances.length,
       averageExecutionTime: avgExecutionTime,
@@ -632,47 +635,59 @@ export function createBookingWorkflows(): void {
     version: '1.0.0',
     initialStep: 'validate_request',
     steps: new Map([
-      ['validate_request', {
-        id: 'validate_request',
-        name: 'Validate Booking Request',
-        description: 'Validate booking data and check availability',
-        type: 'action',
-        config: { actionType: 'validate_booking' },
-        retryable: false,
-        onSuccess: 'create_booking',
-        onFailure: 'notify_validation_failure',
-      }],
-      ['create_booking', {
-        id: 'create_booking',
-        name: 'Create Booking Record',
-        description: 'Create booking in database',
-        type: 'action',
-        config: { actionType: 'create_booking' },
-        retryable: true,
-        onSuccess: 'process_payment',
-        onFailure: 'notify_creation_failure',
-      }],
-      ['process_payment', {
-        id: 'process_payment',
-        name: 'Process Payment',
-        description: 'Process customer payment',
-        type: 'action',
-        config: { actionType: 'process_payment' },
-        retryable: true,
-        timeout: 30000,
-        onSuccess: 'send_confirmation',
-        onFailure: 'handle_payment_failure',
-        onTimeout: 'handle_payment_timeout',
-      }],
-      ['send_confirmation', {
-        id: 'send_confirmation',
-        name: 'Send Confirmation',
-        description: 'Send booking confirmation to customer',
-        type: 'notification',
-        config: { notificationType: 'booking_confirmation' },
-        retryable: true,
-        onSuccess: 'complete',
-      }],
+      [
+        'validate_request',
+        {
+          id: 'validate_request',
+          name: 'Validate Booking Request',
+          description: 'Validate booking data and check availability',
+          type: 'action',
+          config: { actionType: 'validate_booking' },
+          retryable: false,
+          onSuccess: 'create_booking',
+          onFailure: 'notify_validation_failure',
+        },
+      ],
+      [
+        'create_booking',
+        {
+          id: 'create_booking',
+          name: 'Create Booking Record',
+          description: 'Create booking in database',
+          type: 'action',
+          config: { actionType: 'create_booking' },
+          retryable: true,
+          onSuccess: 'process_payment',
+          onFailure: 'notify_creation_failure',
+        },
+      ],
+      [
+        'process_payment',
+        {
+          id: 'process_payment',
+          name: 'Process Payment',
+          description: 'Process customer payment',
+          type: 'action',
+          config: { actionType: 'process_payment' },
+          retryable: true,
+          timeout: 30000,
+          onSuccess: 'send_confirmation',
+          onFailure: 'handle_payment_failure',
+          onTimeout: 'handle_payment_timeout',
+        },
+      ],
+      [
+        'send_confirmation',
+        {
+          id: 'send_confirmation',
+          name: 'Send Confirmation',
+          description: 'Send booking confirmation to customer',
+          type: 'notification',
+          config: { notificationType: 'booking_confirmation' },
+          retryable: true,
+          onSuccess: 'complete',
+        },
+      ],
     ]),
     globalTimeout: 300000, // 5 minutes
     maxRetries: 3,
@@ -695,33 +710,42 @@ export function createBookingWorkflows(): void {
     version: '1.0.0',
     initialStep: 'validate_admin_request',
     steps: new Map([
-      ['validate_admin_request', {
-        id: 'validate_admin_request',
-        name: 'Validate Admin Request',
-        description: 'Validate admin booking request',
-        type: 'action',
-        config: { actionType: 'validate_admin_booking' },
-        retryable: false,
-        onSuccess: 'create_admin_booking',
-      }],
-      ['create_admin_booking', {
-        id: 'create_admin_booking',
-        name: 'Create Admin Booking',
-        description: 'Create booking with admin privileges',
-        type: 'action',
-        config: { actionType: 'create_admin_booking' },
-        retryable: true,
-        onSuccess: 'assign_resources',
-      }],
-      ['assign_resources', {
-        id: 'assign_resources',
-        name: 'Assign Resources',
-        description: 'Assign staff and wash bay',
-        type: 'action',
-        config: { actionType: 'assign_resources' },
-        retryable: true,
-        onSuccess: 'send_admin_confirmation',
-      }],
+      [
+        'validate_admin_request',
+        {
+          id: 'validate_admin_request',
+          name: 'Validate Admin Request',
+          description: 'Validate admin booking request',
+          type: 'action',
+          config: { actionType: 'validate_admin_booking' },
+          retryable: false,
+          onSuccess: 'create_admin_booking',
+        },
+      ],
+      [
+        'create_admin_booking',
+        {
+          id: 'create_admin_booking',
+          name: 'Create Admin Booking',
+          description: 'Create booking with admin privileges',
+          type: 'action',
+          config: { actionType: 'create_admin_booking' },
+          retryable: true,
+          onSuccess: 'assign_resources',
+        },
+      ],
+      [
+        'assign_resources',
+        {
+          id: 'assign_resources',
+          name: 'Assign Resources',
+          description: 'Assign staff and wash bay',
+          type: 'action',
+          config: { actionType: 'assign_resources' },
+          retryable: true,
+          onSuccess: 'send_admin_confirmation',
+        },
+      ],
     ]),
     metadata: {
       category: 'admin',

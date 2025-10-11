@@ -154,9 +154,7 @@ export function withAPIMonitoring<T = any>(
 
     // Extract user info if available
     const userAgent = req.headers.get('user-agent') || undefined;
-    const ip = req.headers.get('x-forwarded-for') ||
-               req.headers.get('x-real-ip') ||
-               'unknown';
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
 
     let statusCode = 200;
     let error: string | undefined;
@@ -205,9 +203,7 @@ export function withAPIMonitoring<T = any>(
 /**
  * API monitoring middleware for traditional Next.js API routes
  */
-export function withAPIMonitoringLegacy(
-  handler: (req: any, res: any) => Promise<void> | void
-) {
+export function withAPIMonitoringLegacy(handler: (req: any, res: any) => Promise<void> | void) {
   return async (req: any, res: any): Promise<void> => {
     const startTime = Date.now();
     const path = req.url || req.path || 'unknown';
@@ -215,17 +211,18 @@ export function withAPIMonitoringLegacy(
 
     // Extract user info
     const userAgent = req.headers['user-agent'];
-    const ip = req.headers['x-forwarded-for'] ||
-               req.headers['x-real-ip'] ||
-               req.connection?.remoteAddress ||
-               'unknown';
+    const ip =
+      req.headers['x-forwarded-for'] ||
+      req.headers['x-real-ip'] ||
+      req.connection?.remoteAddress ||
+      'unknown';
 
     let statusCode = 200;
     let error: string | undefined;
 
     // Wrap res.status to capture status code
     const originalStatus = res.status;
-    res.status = function(code: number) {
+    res.status = function (code: number) {
       statusCode = code;
       return originalStatus.call(this, code);
     };
@@ -252,17 +249,17 @@ export function withAPIMonitoringLegacy(
       apiMetricsCollector.recordMetric(metric);
     };
 
-    res.json = function(data: any) {
+    res.json = function (data: any) {
       recordMetrics();
       return originalJson.call(this, data);
     };
 
-    res.send = function(data: any) {
+    res.send = function (data: any) {
       recordMetrics();
       return originalSend.call(this, data);
     };
 
-    res.end = function(data?: any) {
+    res.end = function (data?: any) {
       recordMetrics();
       return originalEnd.call(this, data);
     };
@@ -289,13 +286,13 @@ export function withAPIMonitoringLegacy(
  * Express-style middleware for database monitoring
  */
 export function createDatabaseMonitoringMiddleware() {
-  return async (req: any, res: any, next: any) => {
+  return async (req: any, _res: any, next: any) => {
     // Inject database monitoring into Prisma client if available
     if (req.prisma) {
       const originalQuery = req.prisma.$queryRaw;
       const originalExecute = req.prisma.$executeRaw;
 
-      req.prisma.$queryRaw = async function(...args: any[]) {
+      req.prisma.$queryRaw = async function (...args: any[]) {
         const startTime = Date.now();
         const queryString = args[0]?.toString() || 'unknown';
 
@@ -322,7 +319,7 @@ export function createDatabaseMonitoringMiddleware() {
         }
       };
 
-      req.prisma.$executeRaw = async function(...args: any[]) {
+      req.prisma.$executeRaw = async function (...args: any[]) {
         const startTime = Date.now();
         const queryString = args[0]?.toString() || 'unknown';
 
@@ -396,7 +393,8 @@ export function getAPIHealthStatus(): {
   const totalRequests = recentMetrics.length;
   const errorCount = recentMetrics.filter(m => m.statusCode >= 400).length;
   const errorRate = (errorCount / totalRequests) * 100;
-  const averageResponseTime = recentMetrics.reduce((sum, m) => sum + m.responseTime, 0) / totalRequests;
+  const averageResponseTime =
+    recentMetrics.reduce((sum, m) => sum + m.responseTime, 0) / totalRequests;
   const slowRequestCount = recentMetrics.filter(m => m.responseTime > 1000).length;
   const slowRequestRate = (slowRequestCount / totalRequests) * 100;
 

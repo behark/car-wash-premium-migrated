@@ -3,8 +3,9 @@
  * Configurable business logic engine with rule evaluation and management
  */
 
+import { differenceInHours } from 'date-fns';
 import { logger } from '../logger';
-import { BusinessError } from '../errors';
+import { BusinessError as _BusinessError } from '../errors';
 
 export interface BusinessRule {
   id: string;
@@ -35,7 +36,13 @@ export interface RuleCondition {
 }
 
 export interface RuleAction {
-  type: 'block' | 'warn' | 'modify_value' | 'add_surcharge' | 'require_approval' | 'custom_function';
+  type:
+    | 'block'
+    | 'warn'
+    | 'modify_value'
+    | 'add_surcharge'
+    | 'require_approval'
+    | 'custom_function';
   message?: string;
   value?: any;
   customFunction?: string;
@@ -218,7 +225,8 @@ export class BusinessRulesEngine {
           }
         }
       } catch (error) {
-        logger.error('Rule evaluation error', error, {
+        logger.error('Rule evaluation error', {
+          error,
           ruleId: rule.id,
           ruleName: rule.name,
           context: this.sanitizeContextForHistory(context),
@@ -351,20 +359,24 @@ export class BusinessRulesEngine {
         return fieldValue !== condition.value;
 
       case 'contains':
-        return typeof fieldValue === 'string' &&
-               typeof condition.value === 'string' &&
-               fieldValue.includes(condition.value);
+        return (
+          typeof fieldValue === 'string' &&
+          typeof condition.value === 'string' &&
+          fieldValue.includes(condition.value)
+        );
 
       case 'in':
-        return Array.isArray(condition.values) &&
-               condition.values.includes(fieldValue);
+        return Array.isArray(condition.values) && condition.values.includes(fieldValue);
 
       default:
         return false;
     }
   }
 
-  private evaluateFieldComparison(condition: RuleCondition, context: RuleEvaluationContext): boolean {
+  private evaluateFieldComparison(
+    condition: RuleCondition,
+    context: RuleEvaluationContext
+  ): boolean {
     if (!condition.field || !condition.operator) return false;
 
     const fieldValue = this.getFieldValue(context.data, condition.field);
@@ -404,8 +416,12 @@ export class BusinessRulesEngine {
     const fieldValue = this.getFieldValue(context.data, condition.field);
     if (!fieldValue) return false;
 
-    const time = typeof fieldValue === 'string' ? fieldValue :
-                 fieldValue instanceof Date ? fieldValue.toTimeString().substring(0, 5) : '';
+    const time =
+      typeof fieldValue === 'string'
+        ? fieldValue
+        : fieldValue instanceof Date
+          ? fieldValue.toTimeString().substring(0, 5)
+          : '';
 
     const [startTime, endTime] = condition.values;
     return time >= startTime && time <= endTime;
@@ -426,7 +442,8 @@ export class BusinessRulesEngine {
       const result = await customFn(context.data, context);
       return Boolean(result);
     } catch (error) {
-      logger.error('Custom function evaluation error', error, {
+      logger.error('Custom function evaluation error', {
+        error,
         functionName: condition.customFunction,
         context: this.sanitizeContextForHistory(context),
       });
@@ -482,12 +499,15 @@ export class BusinessRulesEngine {
     successRate: number;
     lastEvaluated?: Date;
   }> {
-    const metrics = new Map<string, {
-      count: number;
-      totalTime: number;
-      successCount: number;
-      lastEvaluated: Date;
-    }>();
+    const metrics = new Map<
+      string,
+      {
+        count: number;
+        totalTime: number;
+        successCount: number;
+        lastEvaluated: Date;
+      }
+    >();
 
     for (const history of this.evaluationHistory) {
       const existing = metrics.get(history.ruleId) || {
@@ -721,14 +741,17 @@ export class BusinessRulesEngine {
     });
 
     // Customer daily limit check
-    this.addCustomFunction('checkCustomerDailyLimit', async (data: any, context: RuleEvaluationContext) => {
-      if (!data.customerEmail || !data.scheduledDateTime) return true;
+    this.addCustomFunction(
+      'checkCustomerDailyLimit',
+      async (data: any, context: RuleEvaluationContext) => {
+        if (!data.customerEmail || !data.scheduledDateTime) return true;
 
-      // This would check against existing bookings in the database
-      // For now, return a simple check
-      const dailyBookings = context.metadata?.customerDailyBookings || 0;
-      return dailyBookings < 3; // Max 3 bookings per day
-    });
+        // This would check against existing bookings in the database
+        // For now, return a simple check
+        const dailyBookings = context.metadata?.customerDailyBookings || 0;
+        return dailyBookings < 3; // Max 3 bookings per day
+      }
+    );
 
     // Vehicle type validation
     this.addCustomFunction('validateVehicleType', (data: any) => {
@@ -737,13 +760,16 @@ export class BusinessRulesEngine {
     });
 
     // Service availability validation
-    this.addCustomFunction('validateServiceAvailability', async (data: any, context: RuleEvaluationContext) => {
-      if (!data.serviceId) return false;
+    this.addCustomFunction(
+      'validateServiceAvailability',
+      async (data: any, context: RuleEvaluationContext) => {
+        if (!data.serviceId) return false;
 
-      // Check if service is active and available
-      const serviceInfo = context.metadata?.serviceInfo;
-      return serviceInfo?.isActive === true;
-    });
+        // Check if service is active and available
+        const serviceInfo = context.metadata?.serviceInfo;
+        return serviceInfo?.isActive === true;
+      }
+    );
   }
 
   /**
@@ -761,9 +787,7 @@ export class BusinessRulesEngine {
    * Create pricing rules
    */
   createPricingRules(): BusinessRule[] {
-    return [
-      this.rules.get('weekend_premium'),
-    ].filter(Boolean) as BusinessRule[];
+    return [this.rules.get('weekend_premium')].filter(Boolean) as BusinessRule[];
   }
 
   /**

@@ -4,7 +4,7 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { BaseError, ConfigurationError } from './base-error';
+import { BaseError, ConfigurationError as _ConfigurationError } from './base-error';
 import { logger } from '../logger';
 import { trackError } from '../monitoring';
 
@@ -40,6 +40,7 @@ export interface ErrorContext {
   ip?: string;
   endpoint?: string;
   method?: string;
+  severity?: 'info' | 'warning' | 'error' | 'critical';
 }
 
 /**
@@ -103,10 +104,7 @@ export class ErrorHandler {
   /**
    * Handle error in application logic
    */
-  handleApplicationError(
-    error: unknown,
-    context: ErrorContext = {}
-  ): BaseError {
+  handleApplicationError(error: unknown, context: ErrorContext = {}): BaseError {
     return this.processError(error, context);
   }
 
@@ -187,11 +185,9 @@ export class ErrorHandler {
   private convertStandardError(error: Error, context: ErrorContext): BaseError {
     // Handle specific error types
     if (error.name === 'ValidationError') {
-      return new (require('./base-error').ValidationError)(
-        error.message,
-        [],
-        { originalError: error.name }
-      );
+      return new (require('./base-error').ValidationError)(error.message, [], {
+        originalError: error.name,
+      });
     }
 
     if (error.name === 'PrismaClientKnownRequestError') {
@@ -207,17 +203,15 @@ export class ErrorHandler {
     }
 
     if (error.name === 'JsonWebTokenError') {
-      return new (require('./base-error').AuthenticationError)(
-        'Invalid authentication token',
-        { originalError: error.name }
-      );
+      return new (require('./base-error').AuthenticationError)('Invalid authentication token', {
+        originalError: error.name,
+      });
     }
 
     if (error.name === 'TokenExpiredError') {
-      return new (require('./base-error').AuthenticationError)(
-        'Authentication token expired',
-        { originalError: error.name }
-      );
+      return new (require('./base-error').AuthenticationError)('Authentication token expired', {
+        originalError: error.name,
+      });
     }
 
     // Default conversion
@@ -238,7 +232,7 @@ export class ErrorHandler {
   /**
    * Convert Prisma errors to domain errors
    */
-  private convertPrismaError(error: any, context: ErrorContext): BaseError {
+  private convertPrismaError(error: any, _context: ErrorContext): BaseError {
     const { DatabaseError } = require('./base-error');
 
     switch (error.code) {
@@ -250,11 +244,9 @@ export class ErrorHandler {
         );
 
       case 'P2025': // Record not found
-        return new (require('./base-error').NotFoundError)(
-          'Record',
-          undefined,
-          { originalError: error.code }
-        );
+        return new (require('./base-error').NotFoundError)('Record', undefined, {
+          originalError: error.code,
+        });
 
       case 'P2003': // Foreign key constraint violation
         return new (require('./base-error').BusinessError)(
@@ -354,8 +346,9 @@ export class ErrorHandler {
     if (error.shouldRetry()) {
       body.error.retryable = true;
 
-      if (error instanceof (require('./base-error').RateLimitError)) {
-        body.error.retryAfter = error.retryAfter;
+      if (error instanceof require('./base-error').RateLimitError) {
+        // Using type assertion to tell TypeScript this property exists
+        body.error.retryAfter = (error as any).retryAfter;
       }
     }
 
@@ -370,8 +363,8 @@ export class ErrorHandler {
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
     // Rate limiting headers
-    if (error instanceof (require('./base-error').RateLimitError)) {
-      res.setHeader('Retry-After', String(Math.ceil(error.retryAfter / 1000)));
+    if (error instanceof require('./base-error').RateLimitError) {
+      res.setHeader('Retry-After', String(Math.ceil((error as any).retryAfter / 1000)));
     }
 
     // Correlation ID for tracking
@@ -396,7 +389,10 @@ export class ErrorHandler {
     this.metrics.byCode.set(error.code, (this.metrics.byCode.get(error.code) || 0) + 1);
 
     // By severity
-    this.metrics.bySeverity.set(error.severity, (this.metrics.bySeverity.get(error.severity) || 0) + 1);
+    this.metrics.bySeverity.set(
+      error.severity,
+      (this.metrics.bySeverity.get(error.severity) || 0) + 1
+    );
 
     // Recent errors (keep last 100)
     this.metrics.recentErrors.push({
@@ -538,12 +534,12 @@ export function setupGlobalErrorHandlers(options: ErrorHandlerOptions = {}): voi
   const errorHandler = ErrorHandler.getInstance(options);
 
   // Handle uncaught exceptions
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     errorHandler.handleUnhandledError(error, 'uncaughtException');
   });
 
   // Handle unhandled promise rejections
-  process.on('unhandledRejection', (reason) => {
+  process.on('unhandledRejection', reason => {
     errorHandler.handleUnhandledError(reason, 'unhandledRejection');
   });
 

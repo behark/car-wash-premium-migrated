@@ -13,6 +13,7 @@ export interface CacheOptions {
   serialize?: (value: any) => string;
   deserialize?: (value: string) => any;
   skipCache?: boolean;
+  refreshThreshold?: number;
 }
 
 export interface CacheKey {
@@ -43,7 +44,6 @@ export interface CachePattern {
 export class CacheService {
   private redis = getRedisClient();
   private readonly patterns: Map<string, CachePattern> = new Map();
-  private readonly tagMap: Map<string, Set<string>> = new Map();
 
   constructor() {
     this.initializePatterns();

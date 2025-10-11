@@ -45,6 +45,18 @@ class Logger {
       console.log('HTTP:', message, metadata || '');
     }
   }
+
+  /**
+   * Audit logging for tracking important operations
+   */
+  audit(
+    event: string,
+    category?: string,
+    userId?: string | undefined,
+    metadata?: Record<string, any>
+  ): void {
+    console.log('AUDIT:', event, category || '', userId || '', metadata || '');
+  }
 }
 
 export const logger = new Logger();

@@ -273,7 +273,7 @@ export class BackupManager {
       job.duration = job.endTime.getTime() - job.startTime.getTime();
       job.metadata.errorMessage = (error as Error).message;
 
-      logger.error('Backup failed', error, {
+      logger.error('Backup failed', {
         jobId,
         type: job.type,
         duration: job.duration,
@@ -408,7 +408,6 @@ export class BackupManager {
   getBackupMetrics(): BackupMetrics {
     const allJobs = Array.from(this.jobs.values());
     const completedJobs = allJobs.filter(job => job.status === 'completed');
-    const failedJobs = allJobs.filter(job => job.status === 'failed');
 
     const totalSize = completedJobs.reduce((sum, job) => sum + (job.size || 0), 0);
     const avgDuration = completedJobs.length > 0 ?
@@ -472,7 +471,7 @@ export class BackupManager {
 
       if (backupSuccess) {
         const restoreStart = Date.now();
-        const testRestore = await this.createRestoreJob(testBackup.id, {
+        await this.createRestoreJob(testBackup.id, {
           reason: 'Automated backup system test',
           requestedBy: 'system',
           approvedBy: 'system',
@@ -502,7 +501,7 @@ export class BackupManager {
         integrityTest,
       };
     } catch (error) {
-      logger.error('Backup system test failed', error);
+      logger.error('Backup system test failed', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -576,7 +575,7 @@ export class BackupManager {
               recordCount: tableData.count,
             });
           } catch (error) {
-            logger.error('Failed to extract table data', error, { table });
+            logger.error('Failed to extract table data', { table, error: error instanceof Error ? error.message : String(error) });
             // Continue with other tables
           }
         }
@@ -594,7 +593,7 @@ export class BackupManager {
   private async extractTableData(
     client: PrismaClient,
     tableName: string,
-    backupType: string
+    _backupType: string
   ): Promise<{ records: any[]; count: number }> {
     // Simple implementation - in production would handle incremental/differential logic
     try {
@@ -622,7 +621,7 @@ export class BackupManager {
 
       return tables.map(t => t.table_name);
     } catch (error) {
-      logger.error('Failed to get table names', error);
+      logger.error('Failed to get table names', { error: error instanceof Error ? error.message : String(error) });
       return [];
     }
   }
@@ -648,7 +647,6 @@ export class BackupManager {
       data,
     });
 
-    const originalSize = Buffer.byteLength(serialized);
     let finalData = Buffer.from(serialized);
     let compressionRatio: number | undefined;
 
@@ -770,7 +768,7 @@ export class BackupManager {
       restoreJob.status = 'failed';
       restoreJob.endTime = new Date();
 
-      logger.error('Restore failed', error, { restoreJobId });
+      logger.error('Restore failed', { restoreJobId, error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -787,7 +785,7 @@ export class BackupManager {
       try {
         await this.deleteBackup(job.id);
       } catch (error) {
-        logger.error('Failed to delete old backup', error, { jobId: job.id });
+        logger.error('Failed to delete old backup', { jobId: job.id, error: error instanceof Error ? error.message : String(error) });
       }
     }
 

@@ -13,9 +13,9 @@ interface BookingPhotosProps {
 }
 
 export default function BookingPhotos({
-  bookingId,
+  bookingId: _bookingId,
   className,
-  onPhotosChange,
+  onPhotosChange: _onPhotosChange,
   showInstructions = true
 }: BookingPhotosProps) {
   return (

@@ -7,11 +7,11 @@ import { BookingStatus, PaymentStatus, PrismaClient } from '@prisma/client';
 import { format, addMinutes, parseISO, startOfDay, endOfDay } from 'date-fns';
 import {
   executeDbRead,
-  executeDbTransaction,
+  // executeDbTransaction is not used in this file
   transactionManager,
   createBookingSaga,
   type SagaDefinition,
-  type TransactionResult
+  type TransactionResult,
 } from '../prisma';
 import { logger } from '../logger';
 
@@ -58,69 +58,66 @@ export class BookingService {
     serviceId: number,
     options: { includeCapacity?: boolean } = {}
   ): Promise<TimeSlot[]> {
-    return executeDbRead(
-      async (client) => {
-        // Get service details
-        const service = await client.service.findUnique({
-          where: { id: serviceId, isActive: true },
-        });
+    return executeDbRead(async client => {
+      // Get service details
+      const service = await client.service.findUnique({
+        where: { id: serviceId, isActive: true },
+      });
 
-        if (!service) {
-          throw new Error('Service not found or inactive');
-        }
+      if (!service) {
+        throw new Error('Service not found or inactive');
+      }
 
-        const dayStart = startOfDay(date);
-        const dayEnd = endOfDay(date);
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
 
-        // Get existing bookings for the day
-        const existingBookings = await client.booking.findMany({
-          where: {
-            serviceId,
-            date: {
-              gte: dayStart,
-              lte: dayEnd,
-            },
-            status: {
-              notIn: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
-            },
+      // Get existing bookings for the day
+      const existingBookings = await client.booking.findMany({
+        where: {
+          serviceId,
+          date: {
+            gte: dayStart,
+            lte: dayEnd,
           },
-        });
-
-        // Get business hours for the day
-        const dayOfWeek = date.getDay();
-        const businessHours = await client.businessHours.findUnique({
-          where: { dayOfWeek },
-        });
-
-        if (!businessHours || !businessHours.isOpen) {
-          return [];
-        }
-
-        // Check for holidays
-        const holiday = await client.holiday.findFirst({
-          where: {
-            date: {
-              gte: dayStart,
-              lte: dayEnd,
-            },
+          status: {
+            notIn: [BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
           },
-        });
+        },
+      });
 
-        if (holiday) {
-          return [];
-        }
+      // Get business hours for the day
+      const dayOfWeek = date.getDay();
+      const businessHours = await client.businessHours.findUnique({
+        where: { dayOfWeek },
+      });
 
-        // Generate time slots
-        return this.generateTimeSlots(
-          date,
-          service,
-          businessHours,
-          existingBookings,
-          options.includeCapacity
-        );
-      },
-      'check_availability'
-    );
+      if (!businessHours || !businessHours.isOpen) {
+        return [];
+      }
+
+      // Check for holidays
+      const holiday = await client.holiday.findFirst({
+        where: {
+          date: {
+            gte: dayStart,
+            lte: dayEnd,
+          },
+        },
+      });
+
+      if (holiday) {
+        return [];
+      }
+
+      // Generate time slots
+      return this.generateTimeSlots(
+        date,
+        service,
+        businessHours,
+        existingBookings,
+        options.includeCapacity
+      );
+    }, 'check_availability');
   }
 
   /**
@@ -148,7 +145,7 @@ export class BookingService {
     } else {
       // Simple transaction for booking without payment
       return transactionManager.executeSimpleTransaction(
-        async (tx) => {
+        async tx => {
           return this.createBookingInternal(tx, bookingData, options);
         },
         {
@@ -174,7 +171,7 @@ export class BookingService {
     } = {}
   ): Promise<TransactionResult> {
     return transactionManager.executeSimpleTransaction(
-      async (tx) => {
+      async tx => {
         // Get current booking
         const currentBooking = await tx.booking.findUnique({
           where: { id: bookingId },
@@ -249,7 +246,7 @@ export class BookingService {
       steps: [
         {
           name: 'validate_cancellation',
-          execute: async (tx, context) => {
+          execute: async (tx, _context) => {
             const booking = await tx.booking.findUnique({
               where: { id: bookingId },
               include: { service: true },
@@ -273,7 +270,8 @@ export class BookingService {
             const [hours, minutes] = booking.startTime.split(':').map(Number);
             bookingDateTime.setHours(hours, minutes);
 
-            const hoursUntilBooking = (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+            const hoursUntilBooking =
+              (bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
             const cancellationDeadline = 24; // 24 hours default
 
             if (hoursUntilBooking < cancellationDeadline && !options.userId) {
@@ -287,8 +285,8 @@ export class BookingService {
         },
         {
           name: 'update_booking_status',
-          execute: async (tx, context) => {
-            const booking = context.stepResults.validate_cancellation;
+          execute: async (tx, _context) => {
+            const booking = _context.stepResults.validate_cancellation;
 
             const updatedBooking = await tx.booking.update({
               where: { id: bookingId },
@@ -330,8 +328,8 @@ export class BookingService {
         },
         {
           name: 'process_refund',
-          execute: async (tx, context) => {
-            const booking = context.stepResults.validate_cancellation;
+          execute: async (tx, _context) => {
+            const booking = _context.stepResults.validate_cancellation;
 
             if (booking.paymentStatus === PaymentStatus.PAID && options.refundAmount) {
               // Process refund (mock implementation)
@@ -352,7 +350,7 @@ export class BookingService {
 
             return null;
           },
-          compensate: async (tx, context, refund) => {
+          compensate: async (_tx, _context, refund) => {
             if (refund) {
               // Reverse refund (mock)
               await this.reverseRefund(refund.id);
@@ -361,8 +359,8 @@ export class BookingService {
         },
         {
           name: 'send_cancellation_notification',
-          execute: async (tx, context) => {
-            const booking = context.stepResults.validate_cancellation;
+          execute: async (tx, _context) => {
+            const booking = _context.stepResults.validate_cancellation;
 
             // Send cancellation email
             await this.sendCancellationNotification(booking, options.reason);
@@ -383,98 +381,94 @@ export class BookingService {
   /**
    * Get bookings with enhanced filtering and pagination
    */
-  async getBookings(filters: {
-    customerId?: string;
-    serviceId?: number;
-    status?: BookingStatus[];
-    dateFrom?: Date;
-    dateTo?: Date;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<any[]> {
-    return executeDbRead(
-      async (client) => {
-        const where: any = {};
+  async getBookings(
+    filters: {
+      customerId?: string;
+      serviceId?: number;
+      status?: BookingStatus[];
+      dateFrom?: Date;
+      dateTo?: Date;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<any[]> {
+    return executeDbRead(async client => {
+      const where: any = {};
 
-        if (filters.customerId) {
-          where.customerEmail = filters.customerId;
+      if (filters.customerId) {
+        where.customerEmail = filters.customerId;
+      }
+
+      if (filters.serviceId) {
+        where.serviceId = filters.serviceId;
+      }
+
+      if (filters.status && filters.status.length > 0) {
+        where.status = { in: filters.status };
+      }
+
+      if (filters.dateFrom || filters.dateTo) {
+        where.date = {};
+        if (filters.dateFrom) {
+          where.date.gte = startOfDay(filters.dateFrom);
         }
-
-        if (filters.serviceId) {
-          where.serviceId = filters.serviceId;
+        if (filters.dateTo) {
+          where.date.lte = endOfDay(filters.dateTo);
         }
+      }
 
-        if (filters.status && filters.status.length > 0) {
-          where.status = { in: filters.status };
-        }
-
-        if (filters.dateFrom || filters.dateTo) {
-          where.date = {};
-          if (filters.dateFrom) {
-            where.date.gte = startOfDay(filters.dateFrom);
-          }
-          if (filters.dateTo) {
-            where.date.lte = endOfDay(filters.dateTo);
-          }
-        }
-
-        return client.booking.findMany({
-          where,
-          include: {
-            service: true,
-            statusHistoryLog: {
-              orderBy: { createdAt: 'desc' },
-              take: 5,
-            },
+      return client.booking.findMany({
+        where,
+        include: {
+          service: true,
+          statusHistoryLog: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
           },
-          orderBy: [
-            { date: 'desc' },
-            { startTime: 'desc' },
-          ],
-          take: filters.limit || 50,
-          skip: filters.offset || 0,
-        });
-      },
-      'get_bookings'
-    );
+        },
+        orderBy: [{ date: 'desc' }, { startTime: 'desc' }],
+        take: filters.limit || 50,
+        skip: filters.offset || 0,
+      });
+    }, 'get_bookings');
   }
 
   /**
    * Get daily statistics
    */
   async getDailyStats(date: Date): Promise<any> {
-    return executeDbRead(
-      async (client) => {
-        const dayStart = startOfDay(date);
-        const dayEnd = endOfDay(date);
+    return executeDbRead(async client => {
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
 
-        const bookings = await client.booking.findMany({
-          where: {
-            date: {
-              gte: dayStart,
-              lte: dayEnd,
-            },
+      const bookings = await client.booking.findMany({
+        where: {
+          date: {
+            gte: dayStart,
+            lte: dayEnd,
           },
-          include: { service: true },
-        });
+        },
+        include: { service: true },
+      });
 
-        const stats = {
-          total: bookings.length,
-          confirmed: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length,
-          completed: bookings.filter(b => b.status === BookingStatus.COMPLETED).length,
-          cancelled: bookings.filter(b => b.status === BookingStatus.CANCELLED).length,
-          pending: bookings.filter(b => b.status === BookingStatus.PENDING).length,
-          revenue: bookings
+      const stats = {
+        total: bookings.length,
+        confirmed: bookings.filter(b => b.status === BookingStatus.CONFIRMED).length,
+        completed: bookings.filter(b => b.status === BookingStatus.COMPLETED).length,
+        cancelled: bookings.filter(b => b.status === BookingStatus.CANCELLED).length,
+        pending: bookings.filter(b => b.status === BookingStatus.PENDING).length,
+        revenue:
+          bookings
             .filter(b => b.paymentStatus === PaymentStatus.PAID)
             .reduce((sum, b) => sum + b.priceCents, 0) / 100,
-          averageBookingValue: bookings.length > 0 ?
-            bookings.reduce((sum, b) => sum + b.priceCents, 0) / bookings.length / 100 : 0,
-        };
+        averageBookingValue:
+          bookings.length > 0
+            ? bookings.reduce((sum, b) => sum + b.priceCents, 0) / bookings.length / 100
+            : 0,
+      };
 
-        return stats;
-      },
-      'get_daily_stats'
-    );
+      return stats;
+    }, 'get_daily_stats');
   }
 
   // Private helper methods
@@ -643,7 +637,11 @@ export class BookingService {
   private validateStatusTransition(fromStatus: BookingStatus, toStatus: BookingStatus): void {
     const validTransitions: Record<BookingStatus, BookingStatus[]> = {
       [BookingStatus.PENDING]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
-      [BookingStatus.CONFIRMED]: [BookingStatus.IN_PROGRESS, BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
+      [BookingStatus.CONFIRMED]: [
+        BookingStatus.IN_PROGRESS,
+        BookingStatus.CANCELLED,
+        BookingStatus.NO_SHOW,
+      ],
       [BookingStatus.IN_PROGRESS]: [BookingStatus.COMPLETED, BookingStatus.CANCELLED],
       [BookingStatus.COMPLETED]: [], // Cannot transition from completed
       [BookingStatus.CANCELLED]: [], // Cannot transition from cancelled
