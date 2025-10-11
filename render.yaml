@@ -14,7 +14,7 @@ services:
       npx prisma generate &&
       DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" npm run build
     startCommand: npm start
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health-simple
     dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
