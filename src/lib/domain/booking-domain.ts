@@ -397,7 +397,7 @@ export class BookingDomain {
    * Generate booking workflow steps
    */
   generateBookingWorkflow(
-    booking: BookingDomainModel,
+    _booking: BookingDomainModel,
     options: {
       requirePayment?: boolean;
       autoAssignResources?: boolean;
