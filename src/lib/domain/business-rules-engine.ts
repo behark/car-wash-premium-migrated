@@ -4,7 +4,7 @@
  */
 
 import { logger } from '../logger';
-import { BusinessError } from '../errors';
+import { differenceInHours } from 'date-fns';
 
 export interface BusinessRule {
   id: string;
@@ -113,7 +113,7 @@ export class BusinessRulesEngine {
   addRule(rule: BusinessRule): void {
     this.rules.set(rule.id, rule);
 
-    logger.audit('business_rule_added', 'rule', undefined, {
+    logger.info('Business rule added', {
       ruleId: rule.id,
       ruleName: rule.name,
       category: rule.category,
@@ -128,7 +128,7 @@ export class BusinessRulesEngine {
     const removed = this.rules.delete(ruleId);
 
     if (removed) {
-      logger.audit('business_rule_removed', 'rule', undefined, { ruleId });
+      logger.info('Business rule removed', { ruleId });
     }
 
     return removed;
@@ -144,7 +144,7 @@ export class BusinessRulesEngine {
     rule.enabled = enabled;
     rule.metadata.updatedAt = new Date();
 
-    logger.audit('business_rule_toggled', 'rule', undefined, {
+    logger.info('Business rule toggled', {
       ruleId,
       enabled,
     });
@@ -218,7 +218,8 @@ export class BusinessRulesEngine {
           }
         }
       } catch (error) {
-        logger.error('Rule evaluation error', error, {
+        logger.error('Rule evaluation error', {
+          error: error instanceof Error ? error.message : String(error),
           ruleId: rule.id,
           ruleName: rule.name,
           context: this.sanitizeContextForHistory(context),
@@ -426,7 +427,8 @@ export class BusinessRulesEngine {
       const result = await customFn(context.data, context);
       return Boolean(result);
     } catch (error) {
-      logger.error('Custom function evaluation error', error, {
+      logger.error('Custom function evaluation error', {
+        error: error instanceof Error ? error.message : String(error),
         functionName: condition.customFunction,
         context: this.sanitizeContextForHistory(context),
       });
@@ -440,7 +442,7 @@ export class BusinessRulesEngine {
   addCustomFunction(name: string, fn: Function): void {
     this.customFunctions.set(name, fn);
 
-    logger.audit('custom_function_added', 'business_rules_engine', undefined, {
+    logger.info('Custom function added to business rules engine', {
       functionName: name,
     });
   }

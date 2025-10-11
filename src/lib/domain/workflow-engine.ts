@@ -245,7 +245,8 @@ export class WorkflowEngine {
         retryable: false,
       };
 
-      logger.error('Workflow execution failed', error, {
+      logger.error('Workflow execution failed', {
+        error: error instanceof Error ? error.message : String(error),
         instanceId,
         workflowId: instance.workflowId,
         currentStep: instance.currentStep,
@@ -337,7 +338,7 @@ export class WorkflowEngine {
   private async executeStep(
     instance: WorkflowInstance,
     step: WorkflowStep,
-    definition: WorkflowDefinition
+    _definition: WorkflowDefinition
   ): Promise<{ success: boolean; result?: any; error?: WorkflowError }> {
     const startTime = Date.now();
 
@@ -415,7 +416,7 @@ export class WorkflowEngine {
     });
 
     // Approval step handler
-    this.stepHandlers.set('approval', async (step: WorkflowStep, context: WorkflowContext) => {
+    this.stepHandlers.set('approval', async (_step: WorkflowStep, _context: WorkflowContext) => {
       // In production, this would integrate with approval systems
       return { approved: true, approver: 'system' };
     });
@@ -435,7 +436,7 @@ export class WorkflowEngine {
     });
 
     // Delay step handler
-    this.stepHandlers.set('delay', async (step: WorkflowStep, context: WorkflowContext) => {
+    this.stepHandlers.set('delay', async (step: WorkflowStep, _context: WorkflowContext) => {
       const { delayMs } = step.config;
 
       await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -521,7 +522,10 @@ export class WorkflowEngine {
       try {
         listener(data);
       } catch (error) {
-        logger.error('Event listener error', error, { eventType });
+        logger.error('Event listener error', {
+          error: error instanceof Error ? error.message : String(error),
+          eventType
+        });
       }
     });
   }

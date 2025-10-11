@@ -2,9 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma-simple';
 import { BookingStatus } from '@prisma/client';
 import { z } from 'zod';
-import { format, addMinutes, isBefore, addHours } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 import { sendWhatsApp, generateBookingConfirmationWhatsApp } from '../../../lib/whatsapp';
-import { sendSMS, generateBookingConfirmationSMS } from '../../../lib/sms';
+import { sendSMS } from '../../../lib/sms';
 
 const modifyBookingSchema = z.object({
   confirmationCode: z.string().min(8).max(8),

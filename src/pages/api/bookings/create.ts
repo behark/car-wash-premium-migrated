@@ -5,7 +5,7 @@ import { format, addMinutes } from 'date-fns';
 import { sendWhatsApp, generateBookingConfirmationWhatsApp, generateAdminNotificationWhatsApp } from '../../../lib/whatsapp';
 import { sendSMS, generateBookingConfirmationSMS } from '../../../lib/sms';
 import { sendBookingConfirmationEmail } from '../../../lib/email';
-import { getOrCreateCustomer, awardLoyaltyPoints, calculateCustomerDiscount } from '../../../lib/loyalty';
+import { getOrCreateCustomer, awardLoyaltyPoints } from '../../../lib/loyalty';
 import { calculateTotalPrice } from '../../../lib/pricing';
 
 // Simple confirmation code generator

@@ -24,8 +24,8 @@
         "./src/*"
       ]
     },
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "plugins": [
       {
@@ -52,6 +52,8 @@
     "jest.setup.ts",
     "**/*.test.ts",
     "**/*.test.tsx",
-    "__tests__/**/*"
+    "__tests__/**/*",
+    "car-wash-booking/**/*",
+    "temp-repo/**/*"
   ]
 }

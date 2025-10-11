@@ -14,8 +14,8 @@ if (process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN) {
     // Performance Monitoring
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-    // Release tracking
-    release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+    // Release tracking - Use BUILD_ID for Render deployment
+    release: process.env.BUILD_ID || process.env.RENDER_GIT_COMMIT || `${Date.now()}`,
 
     // Debug
     debug: process.env.NODE_ENV === 'development',

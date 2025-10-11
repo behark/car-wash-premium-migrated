@@ -12,18 +12,24 @@ services:
     buildCommand: |
       npm ci --include=dev &&
       npx prisma generate &&
-      npm run build
+      DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" npm run build
     startCommand: |
       npx prisma migrate deploy &&
       npx prisma db seed &&
       npm start
     healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
         fromDatabase:
           name: car-wash-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: car-wash-redis
           property: connectionString
       - key: NEXTAUTH_URL
         sync: false
@@ -33,6 +39,11 @@ services:
         sync: false
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
+      - key: BUILD_ID
+        generateValue: true
+      - key: PORT
+        value: "3000"
+      # Database optimization
       - key: DATABASE_POOL_SIZE
         value: "10"
       - key: DB_MAX_CONNECTIONS
@@ -43,14 +54,39 @@ services:
         value: "10000"
       - key: DB_IDLE_TIMEOUT
         value: "60000"
+      # Redis configuration
+      - key: REDIS_KEY_PREFIX
+        value: "carwash:prod:"
+      - key: REDIS_DEFAULT_TTL
+        value: "3600"
+      - key: REDIS_ENABLE_COMPRESSION
+        value: "true"
+      # Security
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # Business configuration
+      - key: BUSINESS_NAME
+        value: "Kiilto Loisto Autopesula"
+      - key: LOYALTY_PROGRAM_ENABLED
+        value: "true"
+      - key: REAL_TIME_UPDATES_ENABLED
+        value: "true"
 
 # PostgreSQL Database
 databases:
   - name: car-wash-db
-    plan: free
+    plan: starter  # Upgrade from free for production
     databaseName: carwash_booking
     user: carwash_user
     region: oregon
+
+# Redis Cache for session management and real-time features
+services:
+  - type: redis
+    name: car-wash-redis
+    plan: starter  # Redis add-on
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
 
 # Environment Variables to be set manually in Render Dashboard:
 #

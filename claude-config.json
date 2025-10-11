@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "car-wash-booking": {
+      "command": "node",
+      "args": ["dist/mcp-server.js"],
+      "cwd": "/home/behar/Desktop/New Folder (2)",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

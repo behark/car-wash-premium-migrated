@@ -60,8 +60,10 @@ export async function middleware(request: NextRequest) {
   const correlationId = request.headers.get('x-correlation-id') || generateCorrelationId();
   const requestId = request.headers.get('x-request-id') || generateRequestId();
 
-  // Apply comprehensive security headers
+  // Production-grade security headers and CORS configuration
   const response = NextResponse.next();
+
+  // Enhanced security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-XSS-Protection', '1; mode=block');
@@ -69,6 +71,57 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+
+  // HSTS for production HTTPS
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  }
+
+  // Enhanced Content Security Policy for production
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https: *.unsplash.com *.pexels.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https://api.stripe.com https://analytics.google.com https://www.google-analytics.com wss://*.onrender.com ws://localhost:*",
+    "frame-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google.com https://maps.google.com",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "media-src 'self' blob:",
+    "worker-src 'self' blob:",
+    process.env.NODE_ENV === 'production' ? "upgrade-insecure-requests" : ""
+  ].filter(Boolean).join('; ');
+
+  response.headers.set('Content-Security-Policy', csp);
+
+  // CORS configuration for production
+  const origin = request.headers.get('origin');
+  const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
+    'https://*.onrender.com',
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  ];
+
+  if (origin && allowedOrigins.some(allowed => {
+    if (allowed.includes('*')) {
+      const pattern = allowed.replace('*', '.*');
+      return new RegExp(pattern).test(origin);
+    }
+    return allowed === origin;
+  })) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Correlation-ID, X-Request-ID');
+    response.headers.set('Access-Control-Max-Age', '86400');
+  }
+
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, { status: 200, headers: response.headers });
+  }
 
   // Add correlation and request tracking headers
   response.headers.set('X-Correlation-ID', correlationId);

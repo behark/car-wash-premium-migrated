@@ -216,7 +216,7 @@ model PushNotification {
   id             Int                @id @default(autoincrement())
   subscriptionId Int
   bookingId      Int?
-  type           EmailType
+  type           NotificationType
   title          String
   body           String
   icon           String?

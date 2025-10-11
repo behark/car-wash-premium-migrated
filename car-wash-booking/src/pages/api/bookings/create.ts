@@ -5,7 +5,7 @@ import { format, addMinutes } from 'date-fns';
 import { sendWhatsApp, generateBookingConfirmationWhatsApp, generateAdminNotificationWhatsApp } from '../../../lib/whatsapp';
 import { sendSMS, generateBookingConfirmationSMS } from '../../../lib/sms';
 import { sendBookingConfirmationEmail } from '../../../lib/email';
-import { getOrCreateCustomer, awardLoyaltyPoints, calculateCustomerDiscount } from '../../../lib/loyalty';
+import { getOrCreateCustomer, awardLoyaltyPoints } from '../../../lib/loyalty';
 import { calculateTotalPrice } from '../../../lib/pricing';
 
 // Simple confirmation code generator
@@ -145,17 +145,7 @@ export default async function handler(
     const timeString = startTime;
     const priceString = `${(pricingDetails.finalPrice / 100).toFixed(0)}€`;
 
-    // Enhanced WhatsApp message with loyalty info
-    const loyaltyMessage = customer.loyaltyTier !== 'BRONZE'
-      ? `\n🎁 ${customer.loyaltyTier} asiakasetu: ${loyaltyStatus.discount * 100}% alennus!`
-      : '';
-
-    const pointsMessage = `\n⭐ Sait ${Math.floor(pricingDetails.finalPrice / 100)} kanta-asiakaspistettä!`;
-    const totalPointsMessage = `\n🏆 Pisteesi yhteensä: ${loyaltyStatus.currentPoints}`;
-
-    const pricingInfo = pricingDetails.savings > 0
-      ? `\n💰 Säästit: ${(pricingDetails.savings / 100).toFixed(0)}€`
-      : '';
+    // Loyalty info is passed directly to message generation functions
 
     // Send WhatsApp notification to customer
     if (customerPhone) {

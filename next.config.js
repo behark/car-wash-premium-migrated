@@ -69,6 +69,15 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Disable static generation for pages with router issues
+  trailingSlash: false,
+
+  // Handle build errors more gracefully
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

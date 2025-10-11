@@ -962,7 +962,7 @@ export class BookingDomain {
   updateBusinessRules(newRules: Partial<BusinessRules>): void {
     this.businessRules = { ...this.businessRules, ...newRules };
 
-    logger.audit('business_rules_updated', 'booking_domain', undefined, {
+    logger.info('Business rules updated in booking domain', {
       updatedRules: Object.keys(newRules),
       newValues: newRules,
     });

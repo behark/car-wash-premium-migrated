@@ -1,0 +1,90 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+__tests__
+.coverage
+junit.xml
+
+# Next.js
+.next
+out
+
+# Production build
+build
+dist
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation and misc
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+docs/
+
+# Temporary files
+temp/
+tmp/
+.tmp
+
+# Cache
+.eslintcache
+.stylelintcache
+
+# Netlify
+.netlify
+netlify/
+
+# Deployment scripts
+scripts/deploy*.sh
+scripts/netlify*.sh
+
+# Testing files
+test-*.js
+test-*.html
+verify-*.js
+
+# Development only
+.env.example
+.prettierrc
+.prettierignore
+.eslintrc.json
+jest.config.js
+jest.setup.ts
+tsconfig.tsbuildinfo
+
+# MCP files
+mcp-*.ts
+mcp-*.js
+mcp-*.json
+test-mcp.js

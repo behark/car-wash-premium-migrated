@@ -1,0 +1,30 @@
+{
+  "name": "car-wash-booking-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Car Wash Booking System",
+  "main": "mcp-server.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc mcp-server.ts --outDir dist --target es2020 --module esnext --moduleResolution node",
+    "start": "node dist/mcp-server.js",
+    "dev": "ts-node --esm mcp-server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "bin": {
+    "car-wash-mcp": "./dist/mcp-server.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "car-wash",
+    "booking-system",
+    "claude"
+  ]
+}

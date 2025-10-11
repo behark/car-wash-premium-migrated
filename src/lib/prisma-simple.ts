@@ -8,12 +8,26 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
+// Production-optimized Prisma Client configuration
+const prismaOptions = {
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  // Production transaction optimization
+  ...(process.env.NODE_ENV === 'production' && {
+    transactionOptions: {
+      timeout: parseInt(process.env.DATABASE_CONNECTION_TIMEOUT || '30000'),
+    },
+  }),
+};
+
 // Create a single, shared instance of the Prisma Client.
 // If 'globalThis.prisma' exists, reuse it. Otherwise, create a new one.
 // This prevents creating new connections on every request.
-export const prisma = globalThis.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+export const prisma = globalThis.prisma || new PrismaClient(prismaOptions);
 
 // In development, assign the created prisma instance to the global variable
 // to prevent exhausting the database connection limit during hot reloads.
