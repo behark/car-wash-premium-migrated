@@ -297,7 +297,7 @@ export default function AdminAnalytics() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Suosituimmat ajat</h3>
               <div className="space-y-2">
-                {analytics.trends.popularTimeSlots.slice(0, 8).map((slot, index) => (
+                {analytics.trends.popularTimeSlots.slice(0, 8).map((slot) => (
                   <div key={slot.time} className="flex items-center justify-between">
                     <div className="text-sm text-slate-900">{slot.time}</div>
                     <div className="text-sm font-semibold text-slate-900">{slot.bookings} varausta</div>

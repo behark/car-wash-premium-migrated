@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   const fetchBasicStats = async () => {
     try {
       // Just show today's date and basic info
-      const today = new Date().toISOString().split('T')[0];
+      // const today = new Date().toISOString().split('T')[0]; // Commented out - not currently used
       setStats({
         todayBookings: 0, // Could fetch from API later
         weekBookings: 0,

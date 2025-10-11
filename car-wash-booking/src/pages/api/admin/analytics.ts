@@ -5,7 +5,7 @@ import { prisma } from '../../../lib/prisma-simple';
 import { BookingStatus } from '@prisma/client';
 import {
   startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
-  startOfYear, endOfYear, subMonths, subWeeks, format, subDays
+  startOfYear, endOfYear, format, subDays
 } from 'date-fns';
 
 export default async function handler(
