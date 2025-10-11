@@ -4,9 +4,13 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { BaseError, ConfigurationError } from './base-error';
+import { BaseError, ConfigurationError, RateLimitError } from './base-error';
 import { logger } from '../logger';
-import { trackError } from '../monitoring';
+// Simple stub for tracking errors
+const trackError = (error: any, context?: any) => {
+  // In production, this would integrate with monitoring services like Sentry
+  logger.error('Error tracked', { error: error.message || error, context });
+};
 
 export interface ErrorHandlerOptions {
   enableStackTrace?: boolean;
@@ -40,6 +44,7 @@ export interface ErrorContext {
   ip?: string;
   endpoint?: string;
   method?: string;
+  severity?: string;
 }
 
 /**
@@ -354,7 +359,7 @@ export class ErrorHandler {
     if (error.shouldRetry()) {
       body.error.retryable = true;
 
-      if (error instanceof (require('./base-error').RateLimitError)) {
+      if (error instanceof RateLimitError) {
         body.error.retryAfter = error.retryAfter;
       }
     }
@@ -370,8 +375,9 @@ export class ErrorHandler {
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
     // Rate limiting headers
-    if (error instanceof (require('./base-error').RateLimitError)) {
-      res.setHeader('Retry-After', String(Math.ceil(error.retryAfter / 1000)));
+    if (error instanceof BaseError && error.code === 'RATE_LIMIT_EXCEEDED') {
+      const retryAfter = (error as any).retryAfter || 60;
+      res.setHeader('Retry-After', String(Math.ceil(retryAfter / 1000)));
     }
 
     // Correlation ID for tracking

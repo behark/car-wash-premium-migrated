@@ -4,7 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { trackEvent, trackError } from '../monitoring-init';
+// TODO: Add monitoring integration
+const trackEvent = (name: string, properties: any) => { /* Placeholder */ };
+const trackError = (error: Error, context: any) => { /* Placeholder */ };
 
 export interface APIRequestMetrics {
   method: string;
