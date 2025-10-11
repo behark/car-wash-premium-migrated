@@ -61,12 +61,10 @@ const nextConfig = {
   // Enable standalone output for Docker/container deployment
   output: 'standalone',
 
-  // ESLint enabled for production builds (temporarily disabled for deployment)
+  // ESLint and TypeScript disabled for faster deployment
   eslint: {
     ignoreDuringBuilds: true,
   },
-
-  // TypeScript type checking during builds (temporarily disabled for deployment)
   typescript: {
     ignoreBuildErrors: true,
   },
