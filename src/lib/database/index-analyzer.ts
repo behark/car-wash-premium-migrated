@@ -87,7 +87,7 @@ export class IndexAnalyzer {
         summary,
       };
     } catch (error) {
-      logger.error('Index analysis failed', error);
+      logger.error('Index analysis failed', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }

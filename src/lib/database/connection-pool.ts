@@ -80,19 +80,26 @@ class DatabaseConnectionPool {
         },
       });
 
-      // Add event listeners for monitoring
-      this.prismaClient.$on('query', (e) => {
-        this.trackQueryPerformance(e);
-      });
+      // Add event listeners for monitoring (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        try {
+          (this.prismaClient as any).$on('query', (e: any) => {
+            this.trackQueryPerformance(e);
+          });
 
-      this.prismaClient.$on('error', (e) => {
-        logger.error('Database error', {
-          target: e.target,
-          message: e.message,
-          timestamp: e.timestamp,
-        });
-        this.metrics.connectionRequestTimeouts++;
-      });
+          (this.prismaClient as any).$on('error', (e: any) => {
+            logger.error('Database error', {
+              target: e.target,
+              message: e.message,
+              timestamp: e.timestamp,
+            });
+            this.metrics.connectionRequestTimeouts++;
+          });
+        } catch (error) {
+          // Prisma version might not support event listeners
+          console.warn('Prisma event listeners not available in this version');
+        }
+      }
 
       logger.info('Database connection pool initialized', {
         config: this.config,
@@ -236,13 +243,13 @@ class DatabaseConnectionPool {
    * Execute multiple operations in a database transaction
    */
   async executeTransaction<T>(
-    operations: (client: PrismaClient) => Promise<T>,
+    operations: (client: any) => Promise<T>,
     operationName = 'transaction'
   ): Promise<T> {
     return this.execute(
       async (client) => {
         return client.$transaction(async (tx) => {
-          return operations(tx);
+          return operations(tx as any);
         });
       },
       operationName
