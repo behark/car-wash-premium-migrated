@@ -491,7 +491,7 @@ export function createBookingSaga(
 }
 
 // Mock functions for the saga example
-async function processPayment(paymentData: any, amount: number): Promise<{ id: string }> {
+async function processPayment(_paymentData: any, amount: number): Promise<{ id: string }> {
   // Mock payment processing
   return { id: `pi_${Date.now()}` };
 }
