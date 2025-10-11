@@ -4,7 +4,7 @@
  */
 
 import { BookingStatus, PaymentStatus } from '@prisma/client';
-import { addMinutes, parseISO, format, differenceInHours } from 'date-fns';
+import { addMinutes, format, differenceInHours } from 'date-fns';
 import { logger } from '../logger';
 import {
   BusinessError,
