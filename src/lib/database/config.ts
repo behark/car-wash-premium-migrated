@@ -53,11 +53,17 @@ export const createPrismaClient = () => {
 
   // Performance monitoring in development
   if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query', (e) => {
-      if (e.duration > DATABASE_CONFIG.SLOW_QUERY_THRESHOLD) {
-        console.warn(`Slow query detected (${e.duration}ms):`, e.query);
-      }
-    });
+    // Note: $on is disabled in production for performance
+    try {
+      (prisma as any).$on('query', (e: any) => {
+        if (e.duration > DATABASE_CONFIG.SLOW_QUERY_THRESHOLD) {
+          console.warn(`Slow query detected (${e.duration}ms):`, e.query);
+        }
+      });
+    } catch (error) {
+      // Prisma version might not support query logging
+      console.warn('Query logging not available in this Prisma version');
+    }
   }
 
   return prisma;

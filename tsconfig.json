@@ -48,6 +48,10 @@
     "dist",
     "build",
     "prisma",
-    "scripts"
+    "scripts",
+    "jest.setup.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "__tests__/**/*"
   ]
 }

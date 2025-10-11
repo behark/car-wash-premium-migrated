@@ -30,7 +30,7 @@ interface ConnectionPoolConfig {
 }
 
 class DatabaseConnectionPool {
-  private prismaClient: PrismaClient;
+  private prismaClient!: PrismaClient;
   private config: Required<ConnectionPoolConfig>;
   private metrics: PoolMetrics;
   private healthCheckInterval?: NodeJS.Timeout;
