@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 import { BookingStatus, PaymentStatus } from '@prisma/client';
-import { parseISO, isValid as isValidDate, isFuture, isPast, format } from 'date-fns';
+import { parseISO, isValid as isValidDate, isFuture } from 'date-fns';
 
 /**
  * Custom Zod validators
@@ -466,7 +466,7 @@ export function createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
       const errors = result.errors.errors.map(err => ({
         field: err.path.join('.'),
         message: err.message,
-        value: err.input,
+        value: undefined, // ZodIssue doesn't have input property
       }));
 
       throw new ValidationError('Validation failed', errors);

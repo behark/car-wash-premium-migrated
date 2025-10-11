@@ -216,7 +216,7 @@ model PushNotification {
   id             Int                @id @default(autoincrement())
   subscriptionId Int
   bookingId      Int?
-  type           NotificationType
+  type           EmailType
   title          String
   body           String
   icon           String?
@@ -269,53 +269,6 @@ model NotificationPreference {
   updatedAt            DateTime @updatedAt
 
   @@index([customerEmail])
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum PaymentStatus {
-  PENDING
-  PROCESSING
-  PAID
-  FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
-
-enum EmailType {
-  BOOKING_CONFIRMATION
-  PAYMENT_CONFIRMATION
-  BOOKING_REMINDER
-  BOOKING_CANCELLED
-  ADMIN_NOTIFICATION
-}
-
-enum NotificationType {
-  BOOKING_CONFIRMATION
-  BOOKING_REMINDER
-  PAYMENT_CONFIRMATION
-  BOOKING_CANCELLED
-  BOOKING_COMPLETED
-  PROMOTIONAL_OFFER
-  STATUS_UPDATE
-  ADMIN_NOTIFICATION
-  MAINTENANCE_ALERT
-  CUSTOM
-}
-
-enum NotificationStatus {
-  PENDING
-  SENT
-  FAILED
-  CANCELLED
-  EXPIRED
 }
 
 // TastyIgniter-inspired models for enhanced booking management
@@ -428,6 +381,53 @@ model AutomationExecution {
   @@index([ruleId])
   @@index([bookingId])
   @@index([executedAt])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum EmailType {
+  BOOKING_CONFIRMATION
+  PAYMENT_CONFIRMATION
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  ADMIN_NOTIFICATION
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  PAYMENT_CONFIRMATION
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  PROMOTIONAL_OFFER
+  STATUS_UPDATE
+  ADMIN_NOTIFICATION
+  MAINTENANCE_ALERT
+  CUSTOM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+  EXPIRED
 }
 
 enum StaffRole {

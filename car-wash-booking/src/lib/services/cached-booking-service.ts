@@ -3,8 +3,8 @@
  * High-performance booking service with intelligent caching
  */
 
-import { BookingStatus, PaymentStatus } from '@prisma/client';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { BookingStatus } from '@prisma/client';
+import { format } from 'date-fns';
 import { BookingService, type BookingData, type PaymentData, type BookingOptions } from './booking-service';
 import { cacheService } from '../cache/cache-service';
 import { executeDbRead } from '../prisma';
@@ -134,7 +134,7 @@ export class CachedBookingService extends BookingService {
 
     const cacheKey = this.buildBookingQueryCacheKey(filters);
 
-    return this.cacheService.get(
+    const result = await this.cacheService.get(
       cacheKey,
       async () => {
         logger.debug('Cache miss - fetching bookings from database', { filters });
@@ -145,6 +145,9 @@ export class CachedBookingService extends BookingService {
         tags: this.getBookingQueryTags(filters),
       }
     );
+
+    // Handle null cache return
+    return result || [];
   }
 
   /**

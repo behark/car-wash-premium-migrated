@@ -334,7 +334,7 @@ async function main() {
   console.log('✅ Notification templates created:', notificationTemplates.length);
 
   // Create booking configuration
-  const bookingConfig = await prisma.bookingConfiguration.create({
+  await prisma.bookingConfiguration.create({
     data: {
       key: 'default',
       intervalMinutes: 30,

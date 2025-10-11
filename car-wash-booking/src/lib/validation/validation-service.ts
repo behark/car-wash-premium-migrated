@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { ValidationError, BusinessError } from '../errors';
+import { ValidationError } from '../errors';
 import { logger } from '../logger';
 
 export interface ValidationOptions {
@@ -483,7 +483,7 @@ export class ValidationService {
         const errors = result.error.errors.map(err => ({
           field: err.path.join('.') || 'root',
           message: err.message,
-          value: err.input,
+          value: undefined, // ZodIssue doesn't have input property
           code: err.code,
         }));
 

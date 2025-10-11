@@ -73,7 +73,7 @@ export async function validate<T>(
  * Validation decorator for class methods
  */
 export function ValidateInput<T>(schema: z.ZodSchema<T>) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -106,7 +106,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, source: 'body' | 'que
           error: {
             code: error.code,
             message: error.getUserMessage(),
-            details: error.context.validationErrors,
+            details: error.context?.validationErrors || [],
           },
         });
       } else {
@@ -225,7 +225,6 @@ export function createTypedValidator<T>(schema: z.ZodSchema<T>) {
         const errors = result.error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message,
-          value: err.input,
         }));
         throw new ValidationError('Validation failed', errors);
       }
@@ -256,7 +255,7 @@ export const SchemaUtils = {
    * Make all fields optional
    */
   makeOptional<T>(schema: z.ZodSchema<T>): z.ZodSchema<Partial<T>> {
-    return schema.partial();
+    return (schema as any).partial() as z.ZodSchema<Partial<T>>;
   },
 
   /**
@@ -265,8 +264,8 @@ export const SchemaUtils = {
   pick<T, K extends keyof T>(
     schema: z.ZodObject<any>,
     keys: K[]
-  ): z.ZodObject<Pick<z.infer<typeof schema>, K>> {
-    return schema.pick(keys.reduce((acc, key) => ({ ...acc, [key]: true }), {} as any));
+  ): any {
+    return schema.pick(keys.reduce((acc, key) => ({ ...acc, [key]: true }), {} as any)) as any;
   },
 
   /**
@@ -275,7 +274,7 @@ export const SchemaUtils = {
   omit<T, K extends keyof T>(
     schema: z.ZodObject<any>,
     keys: K[]
-  ): z.ZodObject<Omit<z.infer<typeof schema>, K>> {
+  ) {
     return schema.omit(keys.reduce((acc, key) => ({ ...acc, [key]: true }), {} as any));
   },
 
@@ -292,9 +291,9 @@ export const SchemaUtils = {
   /**
    * Create union of schemas
    */
-  union<T extends readonly [z.ZodTypeAny, ...z.ZodTypeAny[]]>(
+  union<T extends readonly [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]>(
     schemas: T
-  ): z.ZodUnion<T> {
+  ) {
     return z.union(schemas);
   },
 
@@ -304,7 +303,7 @@ export const SchemaUtils = {
   discriminatedUnion<T extends string, U extends Record<string, z.ZodTypeAny>>(
     discriminator: T,
     options: U
-  ): z.ZodDiscriminatedUnion<T, z.objectUtil.Values<U>> {
+  ): any {
     return z.discriminatedUnion(discriminator, Object.values(options) as any);
   },
 };

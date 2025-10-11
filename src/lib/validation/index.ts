@@ -304,7 +304,7 @@ export const SchemaUtils = {
   discriminatedUnion<T extends string, U extends Record<string, z.ZodTypeAny>>(
     discriminator: T,
     options: U
-  ): z.ZodDiscriminatedUnion<T, z.objectUtil.Values<U>> {
+  ): any {
     return z.discriminatedUnion(discriminator, Object.values(options) as any);
   },
 };

@@ -359,7 +359,7 @@ export class BookingService {
         },
         {
           name: 'send_cancellation_notification',
-          execute: async (tx, _context) => {
+          execute: async (_tx, _context) => {
             const booking = _context.stepResults.validate_cancellation;
 
             // Send cancellation email

@@ -1,14 +1,22 @@
 # Render Blueprint for Car Wash Booking System
-# Save this as render.yaml in your repository root
+# This file defines the infrastructure as code for deployment
 
 services:
   # Web Service
   - type: web
     name: car-wash-booking
     env: node
-    plan: starter # Change to 'standard' or 'pro' for production
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: |
+      npm ci --include=dev &&
+      npx prisma generate &&
+      npm run build
+    startCommand: |
+      npx prisma migrate deploy &&
+      npx prisma db seed &&
+      npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -18,27 +26,45 @@ services:
           name: car-wash-db
           property: connectionString
       - key: NEXTAUTH_URL
-        generateValue: true # Will be auto-generated based on service URL
+        sync: false
       - key: NEXTAUTH_SECRET
-        generateValue: true # Will generate a secure random secret
+        generateValue: true
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: DATABASE_POOL_SIZE
+        value: "10"
+      - key: DB_MAX_CONNECTIONS
+        value: "20"
+      - key: DATABASE_CONNECTION_TIMEOUT
+        value: "30000"
+      - key: DB_POOL_TIMEOUT
+        value: "10000"
+      - key: DB_IDLE_TIMEOUT
+        value: "60000"
 
-  # PostgreSQL Database
+# PostgreSQL Database
 databases:
   - name: car-wash-db
-    plan: starter # Change to 'standard' for production
+    plan: free
     databaseName: carwash_booking
     user: carwash_user
+    region: oregon
 
-# Environment Variables Template (set these in Render dashboard)
-# Required:
-# - STRIPE_SECRET_KEY
-# - STRIPE_PUBLISHABLE_KEY
-# - SENDGRID_API_KEY
-# - SENDER_EMAIL
-
-# Optional:
-# - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-# - SENTRY_DSN
-# - TWILIO_ACCOUNT_SID
-# - TWILIO_AUTH_TOKEN
-# - TWILIO_FROM
+# Environment Variables to be set manually in Render Dashboard:
+#
+# REQUIRED (Payment & Email):
+# - STRIPE_SECRET_KEY (e.g., sk_live_...)
+# - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (e.g., pk_live_...)
+# - STRIPE_WEBHOOK_SECRET (e.g., whsec_...)
+# - SENDGRID_API_KEY (e.g., SG....)
+# - SENDER_EMAIL (e.g., noreply@yourdomain.com)
+#
+# OPTIONAL (Analytics & Monitoring):
+# - SENTRY_DSN (for error tracking)
+# - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY (for maps)
+# - NEXT_PUBLIC_GA_ID (for analytics)
+#
+# Note: NEXTAUTH_URL and NEXT_PUBLIC_SITE_URL will be auto-generated
+# based on your service URL (e.g., https://your-app-name.onrender.com)

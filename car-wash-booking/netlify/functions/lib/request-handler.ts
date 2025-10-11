@@ -7,7 +7,7 @@
 import { Handler, HandlerEvent, HandlerContext, HandlerResponse } from '@netlify/functions';
 import { z } from 'zod';
 import { getCorsHeaders, createOptionsResponse } from './cors';
-import { createSuccessResponse, createErrorResponse } from './api-response';
+import { createSuccessResponse } from './api-response';
 import { handleError, HttpStatus, CommonErrors } from './error-handler';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS';
@@ -70,7 +70,7 @@ export function createHandler<TBody = any, TQuery = any>(
   config: RequestHandlerConfig,
   handler: (request: ParsedRequest<TBody, TQuery>) => Promise<any>
 ): Handler {
-  return async (event: HandlerEvent, context: HandlerContext): Promise<HandlerResponse> => {
+  return async (event: HandlerEvent, _context: HandlerContext): Promise<HandlerResponse> => {
     const corsHeaders = getCorsHeaders(config.corsConfig);
 
     try {

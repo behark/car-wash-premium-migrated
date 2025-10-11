@@ -14,24 +14,25 @@ function generateRequestId(): string {
   return `req_${timestamp}_${random}`;
 }
 
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
+// Commented out unused function - can be enabled when needed
+// function getClientIp(req: NextRequest): string {
+//   const forwarded = req.headers.get('x-forwarded-for');
+//   if (forwarded) {
+//     return forwarded.split(',')[0].trim();
+//   }
 
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
+//   const realIp = req.headers.get('x-real-ip');
+//   if (realIp) {
+//     return realIp;
+//   }
 
-  const cloudflareIp = req.headers.get('cf-connecting-ip');
-  if (cloudflareIp) {
-    return cloudflareIp;
-  }
+//   const cloudflareIp = req.headers.get('cf-connecting-ip');
+//   if (cloudflareIp) {
+//     return cloudflareIp;
+//   }
 
-  return req.ip || 'unknown';
-}
+//   return 'unknown';
+// }
 
 function extractUserInfo(req: NextRequest): { userId?: string; sessionId?: string } {
   try {
