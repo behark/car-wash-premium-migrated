@@ -1,258 +1,27 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-// Use edge-compatible utilities for middleware
-function generateCorrelationId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 10);
-  return `corr_${timestamp}_${random}`;
-}
 
-function generateRequestId(): string {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 10);
-  return `req_${timestamp}_${random}`;
-}
-
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-
-  const cloudflareIp = req.headers.get('cf-connecting-ip');
-  if (cloudflareIp) {
-    return cloudflareIp;
-  }
-
-  return req.ip || 'unknown';
-}
-
-function extractUserInfo(req: NextRequest): { userId?: string; sessionId?: string } {
-  try {
-    const userIdHeader = req.headers.get('x-user-id');
-    const sessionIdHeader = req.headers.get('x-session-id');
-
-    const cookieUserId = req.cookies.get('user-id')?.value;
-    const cookieSessionId = req.cookies.get('session-id')?.value ||
-                          req.cookies.get('next-auth.session-token')?.value;
-
-    return {
-      userId: userIdHeader || cookieUserId,
-      sessionId: sessionIdHeader || cookieSessionId,
-    };
-  } catch (error) {
-    console.debug('Failed to extract user info', error);
-    return {};
-  }
-}
-
-// Enhanced middleware with comprehensive security features and correlation tracking
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Generate correlation and request IDs
-  const correlationId = request.headers.get('x-correlation-id') || generateCorrelationId();
-  const requestId = request.headers.get('x-request-id') || generateRequestId();
-
-  // Production-grade security headers and CORS configuration
+export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
-  // Enhanced security headers
+  // Add basic security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-
-  // HSTS for production HTTPS
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  }
-
-  // Enhanced Content Security Policy for production
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: blob: https: *.unsplash.com *.pexels.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://api.stripe.com https://analytics.google.com https://www.google-analytics.com wss://*.onrender.com ws://localhost:*",
-    "frame-src 'self' https://js.stripe.com https://checkout.stripe.com https://www.google.com https://maps.google.com",
-    "frame-ancestors 'none'",
-    "form-action 'self'",
-    "base-uri 'self'",
-    "object-src 'none'",
-    "media-src 'self' blob:",
-    "worker-src 'self' blob:",
-    process.env.NODE_ENV === 'production' ? "upgrade-insecure-requests" : ""
-  ].filter(Boolean).join('; ');
-
-  response.headers.set('Content-Security-Policy', csp);
-
-  // CORS configuration for production
-  const origin = request.headers.get('origin');
-  const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
-    'https://*.onrender.com',
-    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  ];
-
-  if (origin && allowedOrigins.some(allowed => {
-    if (allowed.includes('*')) {
-      const pattern = allowed.replace('*', '.*');
-      return new RegExp(pattern).test(origin);
-    }
-    return allowed === origin;
-  })) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Correlation-ID, X-Request-ID');
-    response.headers.set('Access-Control-Max-Age', '86400');
-  }
-
-  // Handle CORS preflight requests
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 200, headers: response.headers });
-  }
-
-  // Add correlation and request tracking headers
-  response.headers.set('X-Correlation-ID', correlationId);
-  response.headers.set('X-Request-ID', requestId);
-
-  // Log request for monitoring (Edge Runtime compatible)
-  const { userId } = extractUserInfo(request);
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[${correlationId}] ${request.method} ${pathname}${userId ? ` (user: ${userId})` : ''}`);
-  }
-
-  // Block dangerous paths and common attack vectors
-  const CRITICAL_BLOCKED_PATHS = [
-    '/.env',
-    '/.git/',
-    '/wp-admin',
-    '/wp-login.php',
-    '/.htaccess',
-    '/config.json',
-    '/.aws/',
-    '/phpinfo.php',
-    '/admin.php',
-    '/.DS_Store',
-  ];
-
-  if (CRITICAL_BLOCKED_PATHS.some(path => pathname.includes(path))) {
-    return new NextResponse(null, { status: 404 });
-  }
-
-  // Authentication check for admin routes
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
-
-      if (!token) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/admin/login';
-        url.searchParams.set('callbackUrl', request.nextUrl.pathname);
-        return NextResponse.redirect(url);
-      }
-
-      // Verify admin role
-      if ((token as any).role !== 'admin' && (token as any).role !== 'super_admin') {
-        return new NextResponse(
-          JSON.stringify({
-            error: 'Forbidden',
-            message: 'Admin access required',
-          }),
-          {
-            status: 403,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      }
-    } catch (error) {
-      console.error('Auth check error:', error);
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // API Security: Check for suspicious payloads
-  if (pathname.startsWith('/api/') && request.method !== 'GET') {
-    const contentLength = request.headers.get('content-length');
-    const maxPayloadSize = 10 * 1024 * 1024; // 10MB limit
-
-    if (contentLength && parseInt(contentLength) > maxPayloadSize) {
-      return new NextResponse(
-        JSON.stringify({
-          error: 'Payload Too Large',
-          message: 'Request body exceeds maximum allowed size',
-        }),
-        {
-          status: 413,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-  }
-
-  // Maintenance mode check (if enabled)
-  if (process.env.MAINTENANCE_MODE === 'true' && !pathname.startsWith('/admin')) {
-    return new NextResponse(
-      `<!DOCTYPE html>
-      <html>
-        <head>
-          <title>Maintenance - Kiilto & Loisto</title>
-          <style>
-            body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-            .container { text-align: center; padding: 2rem; }
-            h1 { font-size: 3rem; margin-bottom: 1rem; }
-            p { font-size: 1.2rem; opacity: 0.9; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>🔧 Huoltokatko</h1>
-            <p>Sivusto on väliaikaisesti pois käytöstä huollon vuoksi.</p>
-            <p>Palaamme pian takaisin!</p>
-          </div>
-        </body>
-      </html>`,
-      {
-        status: 503,
-        headers: {
-          'Content-Type': 'text/html',
-          'Retry-After': '3600',
-        },
-      }
-    );
-  }
 
   return response;
 }
 
-// Only run middleware on specific paths to avoid conflicts
+// Apply middleware to all routes except static files
 export const config = {
   matcher: [
     /*
-     * Match all request paths except static files and images
-     * This prevents middleware from interfering with Netlify's serving
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2|css|js)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

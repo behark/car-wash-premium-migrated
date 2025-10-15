@@ -1,10 +1,9 @@
 # Netlify Production Configuration
 # Car Wash Booking System - kiiltoloisto.fi
-# CORRECTED BUILD SETTINGS
+# UPDATED FOR CONSOLIDATED PROJECT
 
 [build]
-  base    = "car-wash-booking"
-  command = "npm install && prisma generate && npm run build && cd netlify/functions && npm install"
+  command = "npm install && npx prisma generate && npm run build && cd netlify/functions && npm install"
   # 'publish' directory is now handled automatically by the Next.js plugin
   # Build caching for improved performance
   publish = ".next"

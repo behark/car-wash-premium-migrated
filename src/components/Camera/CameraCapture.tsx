@@ -1,9 +1,11 @@
 /**
  * Simple Camera Placeholder Component (Memory Optimized)
  * Replaces heavy react-webcam dependency
+ * 
+ * For full camera functionality, use CameraCaptureAdvanced component
+ * which includes webcam integration and actual photo capture
  */
 
-import React from 'react';
 
 interface CameraCaptureProps {
   onPhotoTaken?: (photo: any) => void;

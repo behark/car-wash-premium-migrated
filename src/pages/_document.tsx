@@ -1,4 +1,4 @@
-import { Html, Head, Main, NextScript } from 'next/document';
+import { Head, Html, Main, NextScript } from 'next/document';
 import { siteConfig } from '../lib/siteConfig';
 
 export default function Document() {
@@ -28,7 +28,10 @@ export default function Document() {
         <link rel="manifest" href="/manifest.json" />
 
         <meta name="description" content={siteConfig.tagline} />
-        <meta name="keywords" content="autopesu, autohuolto, varaa aika, Helsinki, autopuhdistus, premium autopesu, ammattitaitoinen autohuolto" />
+        <meta
+          name="keywords"
+          content="autopesu, autohuolto, varaa aika, Helsinki, autopuhdistus, premium autopesu, ammattitaitoinen autohuolto"
+        />
 
         {/* PWA Meta Tags */}
         <meta name="application-name" content="KiiltoLoisto Autopesu" />
@@ -41,9 +44,6 @@ export default function Document() {
         <meta name="msapplication-TileColor" content="#1976d2" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#1976d2" />
-
-        {/* Optimized viewport for performance and PWA */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
         {/* Open Graph */}
         <meta property="og:title" content={`${siteConfig.name} - ${siteConfig.tagline}`} />

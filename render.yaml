@@ -1,10 +1,11 @@
 # Render Blueprint for Car Wash Booking System
+# Updated for consolidated project structure
 # This file defines the infrastructure as code for deployment
 
 services:
   # Web Service
   - type: web
-    name: car-wash-booking
+    name: kiiltoloisto-autopesu
     env: node
     runtime: node
     plan: starter
@@ -12,10 +13,9 @@ services:
     buildCommand: |
       npm ci --include=dev &&
       npx prisma generate &&
-      DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" npm run build
+      npm run build
     startCommand: npm start
-    healthCheckPath: /api/health-simple
-    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
